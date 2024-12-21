@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirect to Stats</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+
+        .container {
+            margin-top: 20%;
+        }
+
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .back-button {
+            background-color: #007BFF;
+            color: white;
+        }
+
+        .confirm-button {
+            background-color: #28a745;
+            color: white;
+        }
+
+        button:hover {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Redirect to Stats</h1>
+        <p>Do you want to go to the stats page?</p>
+        <button class="back-button" onclick="goBack()">Go Back</button>
+        <button class="confirm-button" onclick="redirectToStats()">Confirm</button>
+    </div>
+
+    <script>
+        function goBack() {
+            window.location.href = "index.html"; // Redirects to the homepage
+        }
+
+        function redirectToStats() {
+            window.location.href = "https://sites.google.com/view/options-evanvrexpert/home"; // Redirects to the external stats page
+        }
+    </script>
+</body>
+</html>
