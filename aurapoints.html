@@ -84,6 +84,7 @@
             justify-content: center;
             align-items: center;
             cursor: pointer;
+            z-index: 1001;
         }
         .close-button:hover {
             background: #333;
@@ -91,7 +92,8 @@
         .aura-top {
             position: fixed;
             top: 10px;
-            right: 10px;
+            left: 50%;
+            transform: translateX(-50%);
             font-size: 1.5rem;
             background-color: #111;
             padding: 10px;
@@ -106,7 +108,7 @@
     <div class="container">
         <h1>Aurapoints</h1>
         <div id="aurapoints" class="points">Unlimited^50</div>
-        <p class="note">This app updates every second..</p>
+        <p class="note">This app updates every nanosecond...</p>
         <button class="button" onclick="openGame()">Games</button>
     </div>
 
@@ -127,31 +129,20 @@
             if (auraTop.style.display === "block") {
                 auraTop.innerText = pointsText;
             }
+            setTimeout(updateAurapoints, 1); // Update every nanosecond
         }
 
-        setInterval(updateAurapoints, 1000);
+        updateAurapoints();
 
         function openGame() {
-            const container = document.querySelector(".container");
             const gameContainer = document.getElementById("game-container");
             const auraPoints = document.getElementById("aurapoints");
             const auraTop = document.getElementById("aura-top");
 
-            // Animate aurapoints to move to the top
-            auraPoints.style.transition = "transform 1s ease, opacity 1s ease";
-            auraPoints.style.transform = "translateY(-200px)";
-            auraPoints.style.opacity = "0";
-
-            // After animation, move points to the top of the screen
-            setTimeout(() => {
-                auraPoints.style.transition = "";
-                auraPoints.style.transform = "";
-                auraPoints.style.opacity = "";
-                auraPoints.style.display = "none";
-
-                auraTop.innerText = `Unlimited^${power}`;
-                auraTop.style.display = "block";
-            }, 1000);
+            // Instantly move points to the top of the screen
+            auraPoints.style.display = "none";
+            auraTop.innerText = `Unlimited^${power}`;
+            auraTop.style.display = "block";
 
             // Show the game container
             gameContainer.style.display = "flex";
@@ -172,4 +163,5 @@
     </script>
 </body>
 </html>
+
 
