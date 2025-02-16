@@ -143,18 +143,17 @@
 
     .virus-text {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: black;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 48px;
       color: red;
-      font-size: 24px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       z-index: 1000;
       pointer-events: none;
+    }
+
+    .inverted {
+      filter: invert(1);
     }
   </style>
 </head>
@@ -241,30 +240,37 @@
         // After 10 seconds, return to normal but with "viruses"
         setTimeout(() => {
           document.body.style.pointerEvents = 'auto'; // Re-enable interactions
-          document.body.classList.add('glitch'); // Add glitch effect
-          startViruses(); // Start virus-like behavior
-        }, 13000); // 10 seconds after explosion
+
+          // Show "VIRUS DETECTED!" message
+          const virusText = document.createElement('div');
+          virusText.className = 'virus-text';
+          virusText.textContent = 'VIRUS DETECTED!';
+          document.body.appendChild(virusText);
+
+          // Remove virus text after 5 seconds
+          setTimeout(() => {
+            virusText.remove();
+
+            // Bring back fallen elements
+            elements.forEach((element) => {
+              element.classList.remove('fall');
+              element.style.transform = 'translateY(0)';
+            });
+
+            // Invert colors and add glitch effect
+            document.body.classList.add('inverted', 'glitch');
+
+            // Change command output to "help me"
+            commandOutputElement.innerHTML = '> help me<br>';
+
+            // Add random glitch text to the terminal
+            setInterval(() => {
+              terminalElement.innerHTML += `> [GLITCH] ${Math.random().toString(36).substring(2)}<br>`;
+              terminalElement.scrollTop = terminalElement.scrollHeight; // Auto-scroll
+            }, 500);
+          }, 5000); // Remove virus text after 5 seconds
+        }, 10000); // 10 seconds after explosion
       }, elements.length * 500 + 1000); // Wait for all elements to fall
-    }
-
-    // Start virus-like behavior
-    function startViruses() {
-      // Add random "virus" text
-      const virusText = document.createElement('div');
-      virusText.className = 'virus-text';
-      virusText.textContent = 'VIRUS DETECTED! SYSTEM COMPROMISED!';
-      document.body.appendChild(virusText);
-
-      // Randomly flicker the screen
-      setInterval(() => {
-        document.body.style.backgroundColor = Math.random() > 0.5 ? 'black' : 'red';
-      }, 100);
-
-      // Add random text to the terminal
-      setInterval(() => {
-        terminalElement.innerHTML += `> [VIRUS] ${Math.random().toString(36).substring(2)}<br>`;
-        terminalElement.scrollTop = terminalElement.scrollHeight; // Auto-scroll
-      }, 500);
     }
 
     // Toggle command input
