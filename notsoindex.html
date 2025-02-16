@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EvanBlokEnder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(45deg, #8B0000, #450000);
+            background-size: 400% 400%;
+            animation: gradientAnimation 10s ease infinite;
+            color: #fff;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow: hidden;
+        }
+        @keyframes gradientAnimation {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+        header {
+            background: rgba(139, 0, 0, 0.5);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+        header h1 {
+            font-size: 24px;
+        }
+        nav ul {
+            list-style: none;
+            display: flex;
+        }
+        nav ul li {
+            margin: 0 10px;
+        }
+        nav ul li a {
+            text-decoration: none;
+            color: #fff;
+            font-weight: bold;
+        }
+        nav ul li a:hover {
+            color: #ff4b4b;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            margin-top: 20px;
+            background: #8B0000;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background 0.3s ease;
+        }
+        .button:hover {
+            background: #450000;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            text-align: center;
+        }
+        .card {
+            background: rgba(139, 0, 0, 0.3);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(8px);
+        }
+        .card img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+        footer {
+            text-align: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            color: #fff;
+            margin-top: 20px;
+            backdrop-filter: blur(5px);
+        }
+
+        /* Mobile Hamburger Menu */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+        }
+        .hamburger div {
+            width: 25px;
+            height: 3px;
+            background: #fff;
+            margin: 4px 0;
+            transition: all 0.3s ease;
+        }
+        .hamburger.active div:nth-child(1) {
+            transform: rotate(-45deg) translate(-5px, 6px);
+        }
+        .hamburger.active div:nth-child(2) {
+            opacity: 0;
+        }
+        .hamburger.active div:nth-child(3) {
+            transform: rotate(45deg) translate(-5px, -6px);
+        }
+        @media (max-width: 768px) {
+            nav ul {
+                display: none;
+                flex-direction: column;
+                background: rgba(139, 0, 0, 0.8);
+                position: absolute;
+                top: 60px;
+                right: 20px;
+                border-radius: 8px;
+                padding: 10px;
+            }
+            nav ul.active {
+                display: flex;
+            }
+            .hamburger {
+                display: flex;
+            }
+        }
+
+        /* Floating Question Mark Icon */
+        .question-mark {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #8B0000;
+            color: #fff;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 24px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            animation: float 8s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+        .hidden-text {
+            display: none;
+            position: fixed;
+            bottom: 70px;
+            right: 20px;
+            background: rgba(139, 0, 0, 0.8);
+            color: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 14px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Loading Screen */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            z-index: 10000;
+        }
+
+        /* Black Hole Effect */
+        .black-hole {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: #000;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+            animation: suck 5s forwards;
+        }
+        @keyframes suck {
+            0% {
+                width: 0;
+                height: 0;
+            }
+            100% {
+                width: 200vw;
+                height: 200vh;
+            }
+        }
+
+        /* Final Message */
+        .final-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 48px;
+            color: #fff;
+            z-index: 1001;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading-screen">Loading content...</div>
+
+    <!-- Original Content -->
+    <header>
+        <h1>EvanBlokEnder</h1>
+        <nav>
+            <div class="hamburger">
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="about.html">About Me</a></li>
+                <li><a href="videos.html">Videos</a></li>
+                <li><a href="stats.html">My Beat Saber Stats</a></li>
+                <li><a href="whatis.html">What is Beat Saber?</a></li>
+            </ul>
+        </nav>
+        <a href="https://youtube.com/@evanblokender" class="button" target="_blank">YouTube Link</a>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <h2>WELCOME TO MY PAGE...</h2>
+            <p>I'm just a VR YouTuber trying to escape reality through Beat Saber. It’s the only thing that makes sense anymore.</p>
+            <a href="stats.html" class="button">View my Beat Saber stats...</a>
+        </div>
+
+        <div class="card">
+            <h3>The Classic Logo</h3>
+            <p>A relic of a time when things felt simpler. Now it’s just a memory.</p>
+            <img src="https://custom-images.strikinglycdn.com/res/hrscywv4p/image/upload/c_limit,fl_lossy,h_9000,w_1200,f_auto,q_auto/13004585/171764_726040.png" alt="Classic Logo">
+        </div>
+
+        <div class="card">
+            <h3>Old Username</h3>
+            <p>evanthevrexpert... a name that feels like it belongs to someone else now. Goodbye.</p>
+        </div>
+
+        <div class="card">
+            <h3>Evan</h3>
+            <p>Just an okay Beat Saber player trying to find meaning in the chaos.</p>
+        </div>
+
+        <div class="card">
+            <h3>MM</h3>
+            <p>Sometimes I wonder if anyone even notices me...</p>
+        </div>
+
+        <a href="whatis.html" class="button">What is Beat Saber?</a>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 EvanBlokEnder. All Rights Reserved. Not that it matters...</p>
+    </footer>
+
+    <!-- Floating Question Mark Icon -->
+    <div class="question-mark" onclick="showHiddenText()">?</div>
+    <div class="hidden-text" id="hiddenText">Help me... I’m fine.</div>
+
+    <!-- Black Hole and Final Message -->
+    <div class="black-hole"></div>
+    <div class="final-message">IT'S ALL USELESS</div>
+
+    <script>
+        // Loading Screen
+        setTimeout(() => {
+            document.querySelector('.loading-screen').style.display = 'none';
+            startBlackHoleEffect();
+        }, 1000); // 1-second loading screen
+
+        // Black Hole Effect
+        function startBlackHoleEffect() {
+            const blackHole = document.querySelector('.black-hole');
+            const finalMessage = document.querySelector('.final-message');
+
+            // Start the black hole animation
+            blackHole.style.display = 'block';
+
+            // Remove all content after 5 seconds
+            setTimeout(() => {
+                document.body.innerHTML = ''; // Clear the entire body
+                finalMessage.style.display = 'block'; // Show the final message
+            }, 5000); // 5 seconds for the black hole to "suck" everything
+        }
+
+        // Hamburger Menu Toggle
+        const hamburger = document.querySelector('.hamburger');
+        const navUl = document.querySelector('nav ul');
+
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('active');
+            navUl.classList.toggle('active');
+        });
+
+        // Floating Question Mark Logic
+        const questionMark = document.querySelector('.question-mark');
+        const hiddenText = document.getElementById('hiddenText');
+
+        function showHiddenText() {
+            hiddenText.style.display = 'block';
+            questionMark.style.display = 'none';
+
+            setTimeout(() => {
+                hiddenText.style.display = 'none';
+            }, 8000); // Hide text after 8 seconds
+
+            setTimeout(() => {
+                questionMark.style.display = 'flex';
+            }, 120000); // Reappear after 2 minutes
+        }
+    </script>
+</body>
+</html>
