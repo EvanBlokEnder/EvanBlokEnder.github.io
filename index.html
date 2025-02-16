@@ -105,12 +105,97 @@
             margin-top: 20px;
             backdrop-filter: blur(5px);
         }
+
+        /* Mobile Hamburger Menu */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+        }
+        .hamburger div {
+            width: 25px;
+            height: 3px;
+            background: #fff;
+            margin: 4px 0;
+            transition: all 0.3s ease;
+        }
+        .hamburger.active div:nth-child(1) {
+            transform: rotate(-45deg) translate(-5px, 6px);
+        }
+        .hamburger.active div:nth-child(2) {
+            opacity: 0;
+        }
+        .hamburger.active div:nth-child(3) {
+            transform: rotate(45deg) translate(-5px, -6px);
+        }
+        @media (max-width: 768px) {
+            nav ul {
+                display: none;
+                flex-direction: column;
+                background: rgba(139, 0, 0, 0.8);
+                position: absolute;
+                top: 60px;
+                right: 20px;
+                border-radius: 8px;
+                padding: 10px;
+            }
+            nav ul.active {
+                display: flex;
+            }
+            .hamburger {
+                display: flex;
+            }
+        }
+
+        /* Floating Question Mark Icon */
+        .question-mark {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #8B0000;
+            color: #fff;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 24px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            animation: float 8s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+        .hidden-text {
+            display: none;
+            position: fixed;
+            bottom: 70px;
+            right: 20px;
+            background: rgba(139, 0, 0, 0.8);
+            color: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 14px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
     </style>
 </head>
 <body>
     <header>
         <h1>EvanBlokEnder</h1>
         <nav>
+            <div class="hamburger">
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
             <ul>
                 <li><a href="index.html">Home</a></li>
                 <li><a href="about.html">About Me</a></li>
@@ -156,5 +241,37 @@
     <footer>
         <p>&copy; 2024 EvanBlokEnder. All Rights Reserved. Not that it matters...</p>
     </footer>
+
+    <!-- Floating Question Mark Icon -->
+    <div class="question-mark" onclick="showHiddenText()">?</div>
+    <div class="hidden-text" id="hiddenText">Help me... I’m fine.</div>
+
+    <script>
+        // Hamburger Menu Toggle
+        const hamburger = document.querySelector('.hamburger');
+        const navUl = document.querySelector('nav ul');
+
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('active');
+            navUl.classList.toggle('active');
+        });
+
+        // Floating Question Mark Logic
+        const questionMark = document.querySelector('.question-mark');
+        const hiddenText = document.getElementById('hiddenText');
+
+        function showHiddenText() {
+            hiddenText.style.display = 'block';
+            questionMark.style.display = 'none';
+
+            setTimeout(() => {
+                hiddenText.style.display = 'none';
+            }, 8000); // Hide text after 8 seconds
+
+            setTimeout(() => {
+                questionMark.style.display = 'flex';
+            }, 120000); // Reappear after 2 minutes
+        }
+    </script>
 </body>
 </html>
