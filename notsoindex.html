@@ -22,6 +22,7 @@
             flex-direction: column;
             justify-content: space-between;
             overflow: hidden;
+            position: relative;
         }
         @keyframes gradientAnimation {
             0% {
@@ -203,28 +204,47 @@
             z-index: 10000;
         }
 
-        /* Black Hole Effect */
+        /* Black Hole */
         .black-hole {
             position: fixed;
-            top: 50%;
+            top: -50px;
             left: 50%;
-            width: 0;
-            height: 0;
+            width: 100px;
+            height: 100px;
             background: #000;
             border-radius: 50%;
-            transform: translate(-50%, -50%);
+            transform: translateX(-50%);
             z-index: 1000;
-            animation: suck 5s forwards;
+            animation: blackHoleSuck 10s infinite linear;
         }
-        @keyframes suck {
+        @keyframes blackHoleSuck {
             0% {
-                width: 0;
-                height: 0;
+                transform: translateX(-50%) scale(1);
+            }
+            50% {
+                transform: translateX(-50%) scale(1.2);
             }
             100% {
-                width: 200vw;
-                height: 200vh;
+                transform: translateX(-50%) scale(1);
             }
+        }
+
+        /* Screen Shake */
+        @keyframes shake {
+            0% { transform: translate(0, 0); }
+            10% { transform: translate(-5px, 5px); }
+            20% { transform: translate(5px, -5px); }
+            30% { transform: translate(-5px, -5px); }
+            40% { transform: translate(5px, 5px); }
+            50% { transform: translate(-5px, 5px); }
+            60% { transform: translate(5px, -5px); }
+            70% { transform: translate(-5px, -5px); }
+            80% { transform: translate(5px, 5px); }
+            90% { transform: translate(-5px, 5px); }
+            100% { transform: translate(0, 0); }
+        }
+        .shake {
+            animation: shake 0.5s infinite;
         }
 
         /* Final Message */
@@ -238,11 +258,43 @@
             z-index: 1001;
             display: none;
         }
+
+        /* Raindrops */
+        .rain {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 1;
+        }
+        .rain-drop {
+            position: absolute;
+            bottom: 100%;
+            width: 2px;
+            height: 50px;
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0));
+            animation: fall linear infinite;
+        }
+        @keyframes fall {
+            to {
+                transform: translateY(100vh);
+            }
+        }
     </style>
 </head>
 <body>
     <!-- Loading Screen -->
     <div class="loading-screen">Loading content...</div>
+
+    <!-- Raindrops -->
+    <div class="rain">
+        <!-- Raindrops will be generated dynamically with JavaScript -->
+    </div>
+
+    <!-- Black Hole -->
+    <div class="black-hole"></div>
 
     <!-- Original Content -->
     <header>
@@ -303,8 +355,7 @@
     <div class="question-mark" onclick="showHiddenText()">?</div>
     <div class="hidden-text" id="hiddenText">Help me... I’m fine.</div>
 
-    <!-- Black Hole and Final Message -->
-    <div class="black-hole"></div>
+    <!-- Final Message -->
     <div class="final-message">IT'S ALL USELESS</div>
 
     <script>
@@ -312,21 +363,55 @@
         setTimeout(() => {
             document.querySelector('.loading-screen').style.display = 'none';
             startBlackHoleEffect();
+            createRaindrops();
         }, 1000); // 1-second loading screen
 
         // Black Hole Effect
         function startBlackHoleEffect() {
             const blackHole = document.querySelector('.black-hole');
             const finalMessage = document.querySelector('.final-message');
+            const textElements = document.querySelectorAll('h1, h2, h3, p, a, .button');
+            const otherElements = document.querySelectorAll('header, .container, footer, .question-mark, .hidden-text');
 
-            // Start the black hole animation
-            blackHole.style.display = 'block';
+            // Start screen shake
+            document.body.classList.add('shake');
 
-            // Remove all content after 5 seconds
+            // Suck text elements first
+            textElements.forEach((element, index) => {
+                setTimeout(() => {
+                    element.style.transition = 'transform 4s, opacity 4s';
+                    element.style.transform = 'translateY(-100vh) scale(0.1)';
+                    element.style.opacity = '0';
+                }, index * 500); // 0.5-second delay between text elements
+            });
+
+            // Suck other elements one by one
+            otherElements.forEach((element, index) => {
+                setTimeout(() => {
+                    element.style.transition = 'transform 4s, opacity 4s';
+                    element.style.transform = 'translateY(-100vh) scale(0.1)';
+                    element.style.opacity = '0';
+                }, textElements.length * 500 + index * 500); // 0.5-second delay between other elements
+            });
+
+            // Show final message after all elements are gone
             setTimeout(() => {
-                document.body.innerHTML = ''; // Clear the entire body
-                finalMessage.style.display = 'block'; // Show the final message
-            }, 5000); // 5 seconds for the black hole to "suck" everything
+                document.body.classList.remove('shake');
+                finalMessage.style.display = 'block';
+            }, 12000); // 12 seconds total
+        }
+
+        // Create raindrops
+        function createRaindrops() {
+            const rainContainer = document.querySelector('.rain');
+            for (let i = 0; i < 100; i++) {
+                const drop = document.createElement('div');
+                drop.className = 'rain-drop';
+                drop.style.left = `${Math.random() * 100}vw`;
+                drop.style.animationDuration = `${Math.random() * 0.5 + 0.5}s`;
+                drop.style.animationDelay = `${Math.random() * 2}s`;
+                rainContainer.appendChild(drop);
+            }
         }
 
         // Hamburger Menu Toggle
