@@ -92,14 +92,69 @@
       box-sizing: border-box;
     }
 
-    .crazy-mode {
-      animation: breakLayout 1s forwards;
+    .fall {
+      animation: fall 1s forwards;
     }
 
-    @keyframes breakLayout {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.5) rotate(45deg); }
-      100% { transform: scale(0.8) rotate(90deg); opacity: 0.5; }
+    @keyframes fall {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(100vh); }
+    }
+
+    .shake {
+      animation: shake 0.1s infinite;
+    }
+
+    @keyframes shake {
+      0% { transform: translate(1px, 1px) rotate(0deg); }
+      10% { transform: translate(-1px, -2px) rotate(-1deg); }
+      20% { transform: translate(-3px, 0px) rotate(1deg); }
+      30% { transform: translate(3px, 2px) rotate(0deg); }
+      40% { transform: translate(1px, -1px) rotate(1deg); }
+      50% { transform: translate(-1px, 2px) rotate(-1deg); }
+      60% { transform: translate(-3px, 1px) rotate(0deg); }
+      70% { transform: translate(3px, 1px) rotate(-1deg); }
+      80% { transform: translate(-1px, -1px) rotate(1deg); }
+      90% { transform: translate(1px, 2px) rotate(0deg); }
+      100% { transform: translate(1px, -2px) rotate(-1deg); }
+    }
+
+    .explode {
+      animation: explode 1s forwards;
+    }
+
+    @keyframes explode {
+      0% { transform: scale(1); opacity: 1; }
+      100% { transform: scale(100); opacity: 0; }
+    }
+
+    .glitch {
+      animation: glitch 0.5s infinite;
+    }
+
+    @keyframes glitch {
+      0% { transform: translate(0); }
+      20% { transform: translate(-5px, 5px); }
+      40% { transform: translate(5px, -5px); }
+      60% { transform: translate(-5px, 5px); }
+      80% { transform: translate(5px, -5px); }
+      100% { transform: translate(0); }
+    }
+
+    .virus-text {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: black;
+      color: red;
+      font-size: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      pointer-events: none;
     }
   </style>
 </head>
@@ -148,12 +203,68 @@
       clearInterval(miningIntervalId);
       miningIntervalId = setInterval(mine, 0.0005); // Half a nanosecond
 
-      // Break the layout and freeze the page
-      document.body.classList.add('crazy-mode');
+      // Make elements fall one by one
+      const elements = [counterElement, terminalElement, commandOutputElement, document.querySelector('.go-crazy-button'), document.querySelector('.commands-container')];
+      elements.forEach((element, index) => {
+        setTimeout(() => {
+          element.classList.add('fall');
+        }, index * 500); // Delay each element's fall
+      });
+
+      // Create a huge number that shakes and explodes
       setTimeout(() => {
-        clearInterval(miningIntervalId); // Stop mining
-        document.body.style.pointerEvents = 'none'; // Freeze the page
-      }, 1000);
+        const hugeNumber = document.createElement('div');
+        hugeNumber.textContent = minedCount;
+        hugeNumber.style.position = 'fixed';
+        hugeNumber.style.top = '50%';
+        hugeNumber.style.left = '50%';
+        hugeNumber.style.transform = 'translate(-50%, -50%)';
+        hugeNumber.style.fontSize = '100px';
+        hugeNumber.style.color = 'red';
+        hugeNumber.style.zIndex = '1000';
+        document.body.appendChild(hugeNumber);
+
+        // Shake the number
+        hugeNumber.classList.add('shake');
+
+        // Explode the number (make it so big it goes off the screen)
+        setTimeout(() => {
+          hugeNumber.classList.remove('shake');
+          hugeNumber.classList.add('explode');
+        }, 2000);
+
+        // Freeze the page after explosion
+        setTimeout(() => {
+          document.body.style.pointerEvents = 'none'; // Disable all interactions
+        }, 3000);
+
+        // After 10 seconds, return to normal but with "viruses"
+        setTimeout(() => {
+          document.body.style.pointerEvents = 'auto'; // Re-enable interactions
+          document.body.classList.add('glitch'); // Add glitch effect
+          startViruses(); // Start virus-like behavior
+        }, 13000); // 10 seconds after explosion
+      }, elements.length * 500 + 1000); // Wait for all elements to fall
+    }
+
+    // Start virus-like behavior
+    function startViruses() {
+      // Add random "virus" text
+      const virusText = document.createElement('div');
+      virusText.className = 'virus-text';
+      virusText.textContent = 'VIRUS DETECTED! SYSTEM COMPROMISED!';
+      document.body.appendChild(virusText);
+
+      // Randomly flicker the screen
+      setInterval(() => {
+        document.body.style.backgroundColor = Math.random() > 0.5 ? 'black' : 'red';
+      }, 100);
+
+      // Add random text to the terminal
+      setInterval(() => {
+        terminalElement.innerHTML += `> [VIRUS] ${Math.random().toString(36).substring(2)}<br>`;
+        terminalElement.scrollTop = terminalElement.scrollHeight; // Auto-scroll
+      }, 500);
     }
 
     // Toggle command input
