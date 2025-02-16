@@ -1,167 +1,106 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Aurapoints Counter</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #0e0e0e;
-            color: #fff;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            text-align: center;
-        }
-        .container {
-            padding: 20px;
-            background-color: #111;
-            border-radius: 15px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-            position: relative;
-        }
-        h1 {
-            font-size: 2rem;
-            margin-bottom: 20px;
-        }
-        .points {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: #00f1f1;
-        }
-        .note {
-            font-size: 1rem;
-            margin-top: 15px;
-            color: #888;
-        }
-        .button {
-            margin-top: 20px;
-            padding: 10px 20px;
-            font-size: 1rem;
-            background-color: #00f1f1;
-            color: #111;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .button:hover {
-            background-color: #00c7c7;
-        }
-        .game-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: rgba(0, 0, 0, 0.9);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        .game-container iframe {
-            width: 80%;
-            height: 80%;
-            border: none;
-        }
-        .close-button {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: #111;
-            color: #00f1f1;
-            border: none;
-            font-size: 1.2rem;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            z-index: 1001;
-        }
-        .close-button:hover {
-            background: #333;
-        }
-        .aura-top {
-            position: fixed;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 1.5rem;
-            background-color: #111;
-            padding: 10px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-            z-index: 1000;
-            display: none;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mining Simulator</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background-color: black;
+      color: red;
+      font-family: monospace;
+      overflow: hidden;
+    }
+
+    .terminal {
+      width: 90%;
+      height: 60%;
+      background-color: #330000;
+      border: 2px solid red;
+      padding: 20px;
+      box-sizing: border-box;
+      overflow-y: auto;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    .counter {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+
+    .go-crazy-button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: red;
+      color: black;
+      border: none;
+      cursor: pointer;
+    }
+
+    .shake {
+      animation: shake 0.5s infinite;
+    }
+
+    @keyframes shake {
+      0% { transform: translate(1px, 1px) rotate(0deg); }
+      10% { transform: translate(-1px, -2px) rotate(-1deg); }
+      20% { transform: translate(-3px, 0px) rotate(1deg); }
+      30% { transform: translate(3px, 2px) rotate(0deg); }
+      40% { transform: translate(1px, -1px) rotate(1deg); }
+      50% { transform: translate(-1px, 2px) rotate(-1deg); }
+      60% { transform: translate(-3px, 1px) rotate(0deg); }
+      70% { transform: translate(3px, 1px) rotate(-1deg); }
+      80% { transform: translate(-1px, -1px) rotate(1deg); }
+      90% { transform: translate(1px, 2px) rotate(0deg); }
+      100% { transform: translate(1px, -2px) rotate(-1deg); }
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Aurapoints</h1>
-        <div id="aurapoints" class="points">Unlimited^50</div>
-        <p class="note">This app updates every nanosecond...</p>
-        <button class="button" onclick="openGame()">Games</button>
-    </div>
+  <div class="counter">Mined: <span id="mined-counter">0</span> B</div>
+  <div class="terminal" id="terminal">
+    > Starting mining simulation...<br>
+    > Mined 1 B per second.<br>
+  </div>
+  <button class="go-crazy-button" onclick="goCrazy()">Go Crazy</button>
 
-    <div id="game-container" class="game-container">
-        <div class="aura-top" id="aura-top">Unlimited^50</div>
-        <iframe src="https://flappybird.io"></iframe>
-        <button class="close-button" onclick="closeGame()">x</button>
-    </div>
+  <script>
+    let minedCount = 0;
+    const counterElement = document.getElementById('mined-counter');
+    const terminalElement = document.getElementById('terminal');
 
-    <script>
-        let power = 50;
+    // Simulate mining
+    setInterval(() => {
+      minedCount++;
+      counterElement.textContent = minedCount;
+      terminalElement.innerHTML += `> Mined 1 B. Total: ${minedCount} B.<br>`;
+      terminalElement.scrollTop = terminalElement.scrollHeight; // Auto-scroll
+    }, 1000);
 
-        function updateAurapoints() {
-            power++;
-            const pointsText = `Unlimited^${power}`;
-            document.getElementById("aurapoints").innerText = pointsText;
-            const auraTop = document.getElementById("aura-top");
-            if (auraTop.style.display === "block") {
-                auraTop.innerText = pointsText;
-            }
-            setTimeout(updateAurapoints, 1); // Update every nanosecond
-        }
+    // Go Crazy function
+    function goCrazy() {
+      // Shake the website
+      document.body.classList.add('shake');
 
-        updateAurapoints();
+      // Open 100 tabs of Google
+      for (let i = 0; i < 100; i++) {
+        window.open('https://www.google.com', '_blank');
+      }
 
-        function openGame() {
-            const gameContainer = document.getElementById("game-container");
-            const auraPoints = document.getElementById("aurapoints");
-            const auraTop = document.getElementById("aura-top");
-
-            // Instantly move points to the top of the screen
-            auraPoints.style.display = "none";
-            auraTop.innerText = `Unlimited^${power}`;
-            auraTop.style.display = "block";
-
-            // Show the game container
-            gameContainer.style.display = "flex";
-        }
-
-        function closeGame() {
-            const gameContainer = document.getElementById("game-container");
-            const auraTop = document.getElementById("aura-top");
-            const auraPoints = document.getElementById("aurapoints");
-
-            // Hide the game container
-            gameContainer.style.display = "none";
-
-            // Reset aura points to original position
-            auraPoints.style.display = "block";
-            auraTop.style.display = "none";
-        }
-    </script>
+      // Stop shaking after 5 seconds
+      setTimeout(() => {
+        document.body.classList.remove('shake');
+      }, 5000);
+    }
+  </script>
 </body>
 </html>
-
-
