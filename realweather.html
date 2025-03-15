@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real Weather Radar & Warnings</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(45deg, #000033, #000066);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        h1 {
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            width: 100%;
+            max-width: 1200px;
+        }
+        .search-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .search-container input {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            width: 200px;
+        }
+        .search-container button {
+            padding: 10px 20px;
+            background: #00008B;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        .search-container button:hover {
+            background: #0000CD;
+        }
+        .radar {
+            background: radial-gradient(circle, #001122, #000033);
+            border: 2px solid #00ffff;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            padding: 20px;
+            width: 100%;
+            text-align: center;
+        }
+        .alerts {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            padding: 20px;
+            width: 100%;
+            text-align: center;
+        }
+        .alerts h2 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+        .alerts ul {
+            list-style: none;
+        }
+        .alerts li {
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255, 0, 0, 0.2);
+            border-radius: 5px;
+        }
+        .go-back-button {
+            padding: 10px 20px;
+            background: #00008B;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            margin-left: auto; /* Push the button to the right */
+        }
+        .go-back-button:hover {
+            background: #0000CD;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Real Weather Radar & Warnings</h1>
+        <button class="go-back-button" onclick="window.location.href='index.html'">Go Back to Home</button>
+    </header>
+    <div class="container">
+        <div class="search-container">
+            <input type="text" id="state-input" placeholder="Enter state (e.g., CA)">
+            <button onclick="searchWarnings()">Search State</button>
+            <button onclick="viewAllWarnings()">View All Warnings</button>
+        </div>
+        <div class="radar">
+            <h2>Live Radar</h2>
+            <iframe
+                src="https://www.rainviewer.com/map.html?loc=39.8283,-98.5795,4&oFa=0&oC=0&oU=0&oCS=1&oF=0&oAP=1&c=1&o=83&lm=1&layer=radar&sm=1&sn=1"
+                width="100%"
+                height="400"
+                frameborder="0"
+                style="border-radius: 8px;"
+            ></iframe>
+        </div>
+        <div class="alerts">
+            <h2>Weather Alerts</h2>
+            <ul id="alerts-list">
+                <li>Enter a state or click "View All Warnings" to see alerts.</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Fetch Weather Alerts by State
+        async function fetchWeatherAlerts(state) {
+            const url = `https://api.weather.gov/alerts/active?area=${state}`;
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                displayAlerts(data.features);
+            } catch (error) {
+                console.error("Error fetching weather alerts:", error);
+                document.getElementById("alerts-list").innerHTML = "<li>Failed to load weather alerts.</li>";
+            }
+        }
+
+        // Fetch All Weather Alerts
+        async function fetchAllWeatherAlerts() {
+            const url = "https://api.weather.gov/alerts/active?status=actual&message_type=alert";
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                displayAlerts(data.features);
+            } catch (error) {
+                console.error("Error fetching weather alerts:", error);
+                document.getElementById("alerts-list").innerHTML = "<li>Failed to load weather alerts.</li>";
+            }
+        }
+
+        // Display Alerts
+        function displayAlerts(alerts) {
+            const alertsList = document.getElementById("alerts-list");
+            alertsList.innerHTML = "";
+
+            if (alerts.length === 0) {
+                alertsList.innerHTML = "<li>No active weather alerts found.</li>";
+                return;
+            }
+
+            alerts.forEach(alert => {
+                const event = alert.properties.event;
+                const description = alert.properties.description;
+                const effective = new Date(alert.properties.effective).toLocaleString();
+                const expires = new Date(alert.properties.expires).toLocaleString();
+
+                const alertItem = document.createElement("li");
+                alertItem.innerHTML = `
+                    <strong>${event}</strong><br>
+                    <small>Effective: ${effective}</small><br>
+                    <small>Expires: ${expires}</small><br>
+                    <p>${description}</p>
+                `;
+                alertsList.appendChild(alertItem);
+            });
+        }
+
+        // Search Warnings by State
+        function searchWarnings() {
+            const state = document.getElementById("state-input").value.trim().toUpperCase();
+            if (state.length === 2) {
+                fetchWeatherAlerts(state);
+            } else {
+                alert("Please enter a valid 2-letter state code (e.g., CA for California).");
+            }
+        }
+
+        // View All Warnings
+        function viewAllWarnings() {
+            fetchAllWeatherAlerts();
+        }
+    </script>
+</body>
+</html>
