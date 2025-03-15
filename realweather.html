@@ -92,17 +92,32 @@
             border-radius: 5px;
             cursor: pointer;
             transition: background 0.3s ease;
-            margin-left: auto; /* Push the button to the right */
+            margin-left: auto;
         }
         .go-back-button:hover {
             background: #0000CD;
+        }
+        .warning-popup {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #ff4444;
+            color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 1000;
+        }
+        .warning-popup.show {
+            display: block;
         }
     </style>
 </head>
 <body>
     <header>
         <h1>Real Weather Radar & Warnings</h1>
-        <button class="go-back-button" onclick="window.location.href='realweather.html'">Go Back to Home</button>
+        <button class="go-back-button" onclick="window.location.href='index.html'">Go Back to Home</button>
     </header>
     <div class="container">
         <div class="search-container">
@@ -128,7 +143,21 @@
         </div>
     </div>
 
+    <!-- Warning Popup -->
+    <div class="warning-popup" id="warning-popup">
+        <strong>New Weather Alert!</strong>
+        <p id="warning-message"></p>
+    </div>
+
+    <!-- Audio Element for Alert Sound -->
+    <audio id="alert-sound">
+        <source src="amber-alert-made-with-Voicemod.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
     <script>
+        let lastAlertId = null; // Track the last alert ID to detect new alerts
+
         // Fetch Weather Alerts by State
         async function fetchWeatherAlerts(state) {
             const url = `https://api.weather.gov/alerts/active?area=${state}`;
@@ -136,6 +165,7 @@
                 const response = await fetch(url);
                 const data = await response.json();
                 displayAlerts(data.features);
+                checkForNewAlerts(data.features);
             } catch (error) {
                 console.error("Error fetching weather alerts:", error);
                 document.getElementById("alerts-list").innerHTML = "<li>Failed to load weather alerts.</li>";
@@ -149,6 +179,7 @@
                 const response = await fetch(url);
                 const data = await response.json();
                 displayAlerts(data.features);
+                checkForNewAlerts(data.features);
             } catch (error) {
                 console.error("Error fetching weather alerts:", error);
                 document.getElementById("alerts-list").innerHTML = "<li>Failed to load weather alerts.</li>";
@@ -182,6 +213,37 @@
             });
         }
 
+        // Check for New Alerts
+        function checkForNewAlerts(alerts) {
+            if (alerts.length > 0) {
+                const latestAlertId = alerts[0].id; // Get the ID of the latest alert
+                if (latestAlertId !== lastAlertId) {
+                    lastAlertId = latestAlertId; // Update the last alert ID
+                    showWarningPopup(alerts[0]); // Show a popup for the new alert
+                    playAlertSound(); // Play the alert sound
+                }
+            }
+        }
+
+        // Show Warning Popup
+        function showWarningPopup(alert) {
+            const popup = document.getElementById("warning-popup");
+            const message = document.getElementById("warning-message");
+            message.textContent = `${alert.properties.event}: ${alert.properties.description}`;
+            popup.classList.add("show");
+
+            // Hide the popup after 10 seconds
+            setTimeout(() => {
+                popup.classList.remove("show");
+            }, 10000);
+        }
+
+        // Play Alert Sound
+        function playAlertSound() {
+            const alertSound = document.getElementById("alert-sound");
+            alertSound.play();
+        }
+
         // Search Warnings by State
         function searchWarnings() {
             const state = document.getElementById("state-input").value.trim().toUpperCase();
@@ -196,6 +258,9 @@
         function viewAllWarnings() {
             fetchAllWeatherAlerts();
         }
+
+        // Periodically Check for New Alerts (every 1 second)
+        setInterval(fetchAllWeatherAlerts, 1000); // 1000 ms = 1 second
     </script>
 </body>
 </html>
