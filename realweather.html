@@ -112,11 +112,70 @@
         .warning-popup.show {
             display: block;
         }
+        .state-alerts-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            border-radius: 8px;
+            padding: 20px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            z-index: 1001;
+            display: none;
+        }
+        .state-alerts-modal.show {
+            display: block;
+        }
+        .state-alerts-modal h2 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+        .state-alerts-modal ul {
+            list-style: none;
+        }
+        .state-alerts-modal li {
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255, 0, 0, 0.2);
+            border-radius: 5px;
+        }
+        .state-alerts-modal button {
+            padding: 10px 20px;
+            background: #00008B;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        .state-alerts-modal button:hover {
+            background: #0000CD;
+        }
+        .rate-limit-warning {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #ff4444;
+            color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            font-size: 1.2rem;
+            z-index: 1002;
+            display: none;
+        }
+        .rate-limit-warning.show {
+            display: block;
+        }
     </style>
 </head>
 <body>
     <header>
-        <h1>Real Weather Radar & Warnings (always seraching for new alerts!)</h1>
+        <h1>Real Weather Radar & Warnings (always searching for new alerts!)</h1>
         <button class="go-back-button" onclick="window.location.href='index.html'">Go Back to Home</button>
     </header>
     <div class="container">
@@ -149,6 +208,18 @@
         <p id="warning-message"></p>
     </div>
 
+    <!-- State Alerts Modal -->
+    <div class="state-alerts-modal" id="state-alerts-modal">
+        <button onclick="closeStateAlertsModal()">Close</button>
+        <h2 id="state-alerts-title"></h2>
+        <ul id="state-alerts-list"></ul>
+    </div>
+
+    <!-- Rate Limit Warning -->
+    <div class="rate-limit-warning" id="rate-limit-warning">
+        ⚠️ Rate Limited by NWS API. Please wait...
+    </div>
+
     <!-- Audio Element for Alert Sound -->
     <audio id="alert-sound">
         <source src="amber-alert-made-with-Voicemod.mp3" type="audio/mpeg">
@@ -163,12 +234,15 @@
             const url = `https://api.weather.gov/alerts/active?area=${state}`;
             try {
                 const response = await fetch(url);
+                if (response.status === 429) {
+                    showRateLimitWarning();
+                    return;
+                }
                 const data = await response.json();
-                displayAlerts(data.features);
-                checkForNewAlerts(data.features);
+                showStateAlertsModal(state, data.features);
             } catch (error) {
                 console.error("Error fetching weather alerts:", error);
-                document.getElementById("alerts-list").innerHTML = "<li>Failed to load weather alerts.</li>";
+                alert("Failed to load weather alerts for the state.");
             }
         }
 
@@ -177,6 +251,10 @@
             const url = "https://api.weather.gov/alerts/active?status=actual&message_type=alert";
             try {
                 const response = await fetch(url);
+                if (response.status === 429) {
+                    showRateLimitWarning();
+                    return;
+                }
                 const data = await response.json();
                 displayAlerts(data.features);
                 checkForNewAlerts(data.features);
@@ -244,6 +322,17 @@
             alertSound.play();
         }
 
+        // Show Rate Limit Warning
+        function showRateLimitWarning() {
+            const warning = document.getElementById("rate-limit-warning");
+            warning.classList.add("show");
+
+            // Hide the warning after 10 seconds
+            setTimeout(() => {
+                warning.classList.remove("show");
+            }, 10000);
+        }
+
         // Search Warnings by State
         function searchWarnings() {
             const state = document.getElementById("state-input").value.trim().toUpperCase();
@@ -259,8 +348,49 @@
             fetchAllWeatherAlerts();
         }
 
+        // Show State Alerts Modal
+        function showStateAlertsModal(state, alerts) {
+            const modal = document.getElementById("state-alerts-modal");
+            const title = document.getElementById("state-alerts-title");
+            const alertsList = document.getElementById("state-alerts-list");
+
+            title.textContent = `Weather Alerts for ${state}`;
+            alertsList.innerHTML = "";
+
+            if (alerts.length === 0) {
+                alertsList.innerHTML = "<li>No active weather alerts found for this state.</li>";
+            } else {
+                alerts.forEach(alert => {
+                    const event = alert.properties.event;
+                    const description = alert.properties.description;
+                    const effective = new Date(alert.properties.effective).toLocaleString();
+                    const expires = new Date(alert.properties.expires).toLocaleString();
+
+                    const alertItem = document.createElement("li");
+                    alertItem.innerHTML = `
+                        <strong>${event}</strong><br>
+                        <small>Effective: ${effective}</small><br>
+                        <small>Expires: ${expires}</small><br>
+                        <p>${description}</p>
+                    `;
+                    alertsList.appendChild(alertItem);
+                });
+            }
+
+            modal.classList.add("show");
+        }
+
+        // Close State Alerts Modal
+        function closeStateAlertsModal() {
+            const modal = document.getElementById("state-alerts-modal");
+            modal.classList.remove("show");
+        }
+
         // Periodically Check for New Alerts (every 1 second)
         setInterval(fetchAllWeatherAlerts, 1000); // 1000 ms = 1 second
+
+        // Fetch Alerts on Page Load
+        fetchAllWeatherAlerts();
     </script>
 </body>
 </html>
