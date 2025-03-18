@@ -5,34 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EvanBlokEnder</title>
     <style>
+        /* General Reset */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
+
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
             line-height: 1.6;
             background: linear-gradient(45deg, #87CEEB, #00008B);
             background-size: 400% 400%;
             animation: gradientAnimation 10s ease infinite;
             color: #fff;
-            height: 100vh;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
         }
+
         @keyframes gradientAnimation {
-            0% {
-                background-position: 0% 50%;
-            }
-            50% {
-                background-position: 100% 50%;
-            }
-            100% {
-                background-position: 0% 50%;
-            }
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
+
+        /* Header */
         header {
             background: rgba(0, 0, 139, 0.5);
             padding: 10px 20px;
@@ -45,24 +44,33 @@
             z-index: 1000;
             backdrop-filter: blur(5px);
         }
+
         header h1 {
             font-size: 24px;
+            animation: fadeIn 1s ease-in-out;
         }
+
         nav ul {
             list-style: none;
             display: flex;
         }
+
         nav ul li {
             margin: 0 10px;
         }
+
         nav ul li a {
             text-decoration: none;
             color: #fff;
             font-weight: bold;
+            transition: color 0.3s ease, transform 0.3s ease;
         }
+
         nav ul li a:hover {
             color: #add8e6;
+            transform: translateY(-3px);
         }
+
         .button {
             display: inline-block;
             padding: 10px 20px;
@@ -72,17 +80,22 @@
             border: none;
             border-radius: 5px;
             text-decoration: none;
-            transition: background 0.3s ease;
+            transition: background 0.3s ease, transform 0.3s ease;
         }
+
         .button:hover {
             background: #0000CD;
+            transform: translateY(-3px);
         }
+
+        /* Main Content */
         .container {
             max-width: 1200px;
             margin: 20px auto;
             padding: 20px;
             text-align: center;
         }
+
         .card {
             background: rgba(0, 0, 139, 0.3);
             padding: 20px;
@@ -91,12 +104,26 @@
             text-align: center;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
             backdrop-filter: blur(8px);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
         .card img {
             max-width: 100%;
             height: auto;
             border-radius: 8px;
+            transition: transform 0.3s ease;
         }
+
+        .card img:hover {
+            transform: scale(1.05);
+        }
+
+        /* Footer */
         footer {
             text-align: center;
             padding: 20px;
@@ -104,6 +131,18 @@
             color: #fff;
             margin-top: 20px;
             backdrop-filter: blur(5px);
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
 
         /* Mobile Hamburger Menu */
@@ -112,6 +151,7 @@
             flex-direction: column;
             cursor: pointer;
         }
+
         .hamburger div {
             width: 25px;
             height: 3px;
@@ -119,15 +159,19 @@
             margin: 4px 0;
             transition: all 0.3s ease;
         }
+
         .hamburger.active div:nth-child(1) {
             transform: rotate(-45deg) translate(-5px, 6px);
         }
+
         .hamburger.active div:nth-child(2) {
             opacity: 0;
         }
+
         .hamburger.active div:nth-child(3) {
             transform: rotate(45deg) translate(-5px, -6px);
         }
+
         @media (max-width: 768px) {
             nav ul {
                 display: none;
@@ -138,10 +182,13 @@
                 right: 20px;
                 border-radius: 8px;
                 padding: 10px;
+                animation: slideIn 0.5s ease;
             }
+
             nav ul.active {
                 display: flex;
             }
+
             .hamburger {
                 display: flex;
             }
@@ -160,9 +207,9 @@
             <ul>
                 <li><a href="index.html">Home</a></li>
                 <li><a href="about.html">About Me</a></li>
-                <li><a href="realweather.html">Weather radar</a></li>
+                <li><a href="realweather.html">Weather Radar</a></li>
                 <li><a href="videos.html">Videos</a></li>
-                <li><a href="mining.html">Mine some coin 😉</a></li>
+                <li><a href="mining.html">Mine Some Coin 😉</a></li>
                 <li><a href="notsoindex.html">Yay</a></li>
                 <li><a href="stats.html">My Beat Saber Stats</a></li>
                 <li><a href="whatis.html">What is Beat Saber?</a></li>
