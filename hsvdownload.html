@@ -36,6 +36,11 @@
         .download-btn:hover {
             background-color: #45a049;
         }
+        .loading {
+            display: none;
+            margin-top: 10px;
+            color: #666;
+        }
     </style>
 </head>
 <body>
@@ -43,25 +48,47 @@
         <h1>HitScoreVisualizer Config Download</h1>
         <p>Click the button below to download the configuration file:</p>
         <button id="downloadBtn" class="download-btn">Download Config</button>
+        <p id="loading" class="loading">Downloading file...</p>
     </div>
 
     <script>
-        document.getElementById('downloadBtn').addEventListener('click', function() {
-            // Get the raw file URL from GitHub
-            const rawUrl = 'https://raw.githubusercontent.com/evanblokender/EvanBlokEnder.github.io/main/HitScoreVisualizerConfig_Evan.json';
+        document.getElementById('downloadBtn').addEventListener('click', async function() {
+            const btn = this;
+            const loading = document.getElementById('loading');
             
-            // Create a temporary anchor element
-            const a = document.createElement('a');
-            a.href = rawUrl;
-            a.download = 'HitScoreVisualizerConfig_Evan.json';
-            a.style.display = 'none';
+            btn.disabled = true;
+            loading.style.display = 'block';
             
-            // Append to body and trigger click
-            document.body.appendChild(a);
-            a.click();
-            
-            // Clean up
-            document.body.removeChild(a);
+            try {
+                // Replace with your actual raw GitHub URL
+                const rawUrl = 'https://raw.githubusercontent.com/evanblokender/EvanBlokEnder.github.io/main/HitScoreVisualizerConfig_Evan.json';
+                
+                // Fetch the file content
+                const response = await fetch(rawUrl);
+                const jsonData = await response.text();
+                
+                // Create a download link
+                const blob = new Blob([jsonData], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'HitScoreVisualizerConfig_Evan.json';
+                document.body.appendChild(a);
+                a.click();
+                
+                // Clean up
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    loading.style.display = 'none';
+                    btn.disabled = false;
+                }, 100);
+                
+            } catch (error) {
+                console.error('Download failed:', error);
+                loading.textContent = 'Download failed. Please try again.';
+                btn.disabled = false;
+            }
         });
     </script>
 </body>
