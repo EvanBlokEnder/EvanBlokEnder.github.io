@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download HitScoreVisualizer Config</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f5f5f5;
+        }
+        .download-container {
+            text-align: center;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .download-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            cursor: pointer;
+            border: none;
+        }
+        .download-btn:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="download-container">
+        <h1>HitScoreVisualizer Config Download</h1>
+        <p>Click the button below to download the configuration file:</p>
+        <button id="downloadBtn" class="download-btn">Download Config</button>
+    </div>
+
+    <script>
+        document.getElementById('downloadBtn').addEventListener('click', function() {
+            // Get the raw file URL from GitHub
+            const rawUrl = 'https://raw.githubusercontent.com/evanblokender/EvanBlokEnder.github.io/main/HitScoreVisualizerConfig_Evan.json';
+            
+            // Create a temporary anchor element
+            const a = document.createElement('a');
+            a.href = rawUrl;
+            a.download = 'HitScoreVisualizerConfig_Evan.json';
+            a.style.display = 'none';
+            
+            // Append to body and trigger click
+            document.body.appendChild(a);
+            a.click();
+            
+            // Clean up
+            document.body.removeChild(a);
+        });
+    </script>
+</body>
+</html>
