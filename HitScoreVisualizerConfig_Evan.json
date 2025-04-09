@@ -1,0 +1,119 @@
+{
+  "majorVersion": 3,
+  "minorVersion": 2,
+  "patchVersion": 1,
+  "isDefaultConfig": false,
+  "displayMode": "format",
+  "doIntermediateUpdates": true,
+  "timeDependencyDecimalPrecision": 0,
+  "timeDependencyDecimalOffset": 0,
+  "judgments": [
+    {
+      "threshold": 115,
+      "text": "<size=170%>%BBlokEnder%A</size>",
+      "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "fade": false
+    },
+    {
+      "threshold": 114,
+      "text": "<size=150%>%B14%A</size>",
+      "color": [
+        0.8313,
+        0.2588,
+        0.9607,
+        1.0
+      ],
+      "fade": false
+    },
+    {
+      "threshold": 110,
+      "text": "<size=150%>%B10%A</size>",
+      "color": [
+        0.8313,
+        0.2588,
+        0.9607,
+        1.0
+      ],
+      "fade": false
+    },
+    {
+      "threshold": 105,
+      "text": "<size=150%>%B05%A</size>",
+      "color": [
+        0.0,
+        1.0,
+        0.0,
+        1.0
+      ],
+      "fade": false
+    },
+    {
+      "threshold": 101,
+      "text": "<size=150%>%B01%A</size>",
+      "color": [
+        1.0,
+        0.980392158,
+        0.0,
+        1.0
+      ],
+      "fade": false
+    },
+    {
+      "threshold": 90,
+      "text": "<size=150%>%s</size>",
+      "color": [
+        1.0,
+        0.980392158,
+        0.0,
+        1.0
+      ],
+      "fade": false
+    },
+    {
+      "threshold": 0,
+      "text": "<size=150%>go play gtag</size>",
+      "color": [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "fade": false
+    }
+  ],
+  "beforeCutAngleJudgments": [
+    {
+      "threshold": 70,
+      "text": " "
+    },
+    {
+      "threshold": 0,
+      "text": "  "
+    }
+  ],
+  "accuracyJudgments": [
+    {
+      "threshold": 15,
+      "text": " "
+    },
+    {
+      "threshold": 0,
+      "text": "  "
+    }
+  ],
+  "afterCutAngleJudgments": [
+    {
+      "threshold": 30,
+      "text": " "
+    },
+    {
+      "threshold": 0,
+      "text": " "
+    }
+  ]
+}
