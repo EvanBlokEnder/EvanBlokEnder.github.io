@@ -1,75 +1,77 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Grow A Garden Live Stock Display</title>
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    background: #f0f8ff;
-    padding: 20px;
-  }
-  h1 {
-    text-align: center;
-    margin-bottom: 1rem;
-  }
-  #status {
-    text-align: center;
-    margin-bottom: 20px;
-    font-weight: bold;
-  }
-  #refresh-btn {
-    display: block;
-    margin: 0 auto 20px auto;
-    padding: 10px 20px;
-    font-size: 16px;
-    background: #6a9955;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  #refresh-btn:hover {
-    background: #57803e;
-  }
-  .stock-category {
-    margin-bottom: 30px;
-  }
-  .stock-category h2 {
-    border-bottom: 2px solid #6a9955;
-    padding-bottom: 5px;
-    color: #2f4f2f;
-    text-transform: capitalize;
-  }
-  .items {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-  }
-  .item-card {
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 0 8px #ccc;
-    padding: 10px;
-    width: 150px;
-    text-align: center;
-  }
-  .item-card img {
-    max-width: 100px;
-    max-height: 100px;
-    object-fit: contain;
-    margin-bottom: 8px;
-  }
-  .item-name {
-    font-weight: bold;
-    margin-bottom: 4px;
-    color: #333;
-  }
-  .item-qty {
-    color: #666;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Grow A Garden Live Stock Display</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#3b43ff" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f8ff;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    #status {
+      text-align: center;
+      margin-bottom: 20px;
+      font-weight: bold;
+    }
+    #refresh-btn {
+      display: block;
+      margin: 0 auto 20px auto;
+      padding: 10px 20px;
+      font-size: 16px;
+      background: #6a9955;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #refresh-btn:hover {
+      background: #57803e;
+    }
+    .stock-category {
+      margin-bottom: 30px;
+    }
+    .stock-category h2 {
+      border-bottom: 2px solid #6a9955;
+      padding-bottom: 5px;
+      color: #2f4f2f;
+      text-transform: capitalize;
+    }
+    .items {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    .item-card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 0 8px #ccc;
+      padding: 10px;
+      width: 150px;
+      text-align: center;
+    }
+    .item-card img {
+      max-width: 100px;
+      max-height: 100px;
+      object-fit: contain;
+      margin-bottom: 8px;
+    }
+    .item-name {
+      font-weight: bold;
+      margin-bottom: 4px;
+      color: #333;
+    }
+    .item-qty {
+      color: #666;
+    }
+  </style>
 </head>
 <body>
 
@@ -79,7 +81,6 @@
 <div id="stock-container"></div>
 
 <script>
-(() => {
   const WS_URL = 'wss://websocket.joshlei.com/growagarden/';
   const statusEl = document.getElementById('status');
   const container = document.getElementById('stock-container');
@@ -88,14 +89,11 @@
   let socket = null;
   let reconnectDelay = 3000;
   let reconnecting = false;
-
   let latestData = {};
-  let isFirstUpdate = true; // Skip notification on first load
+  let isFirstUpdate = true;
   let notificationSentForCurrentData = false;
 
-  refreshBtn.onclick = () => {
-    location.reload();
-  };
+  refreshBtn.onclick = () => location.reload();
 
   function hasDataChanged(oldData, newData) {
     try {
@@ -106,19 +104,14 @@
   }
 
   function notifyUpdateOnce() {
-    if (!("Notification" in window)) {
-      console.log("This browser does not support notifications.");
-      return;
-    }
+    if (!("Notification" in window)) return;
 
-    if (Notification.permission === "granted") {
-      if (!notificationSentForCurrentData) {
-        showNotification();
-        notificationSentForCurrentData = true;
-      }
+    if (Notification.permission === "granted" && !notificationSentForCurrentData) {
+      showNotification();
+      notificationSentForCurrentData = true;
     } else if (Notification.permission !== "denied") {
       Notification.requestPermission().then(permission => {
-        if (permission === "granted") {
+        if (permission === "granted" && !notificationSentForCurrentData) {
           showNotification();
           notificationSentForCurrentData = true;
         }
@@ -138,13 +131,10 @@
   }
 
   function displayStock(data) {
-    if (!hasDataChanged(latestData, data)) {
-      // Data unchanged, no update needed
-      return;
-    }
+    if (!hasDataChanged(latestData, data)) return;
 
     latestData = data;
-    notificationSentForCurrentData = false; // Reset to allow next notification on new changes
+    notificationSentForCurrentData = false;
 
     container.innerHTML = '';
 
@@ -189,7 +179,6 @@
       container.appendChild(section);
     }
 
-    // Only notify if NOT the first update
     if (!isFirstUpdate) {
       notifyUpdateOnce();
     } else {
@@ -224,7 +213,6 @@
 
     socket.onclose = (event) => {
       statusEl.textContent = `Disconnected (code ${event.code}), reconnecting in ${reconnectDelay / 1000}s...`;
-      console.warn(`WebSocket closed: code ${event.code}, reason: ${event.reason || 'N/A'}`);
       if (!reconnecting) {
         reconnecting = true;
         setTimeout(connect, reconnectDelay);
@@ -233,7 +221,13 @@
   }
 
   connect();
-})();
+
+  // PWA: Register Service Worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('service-worker.js')
+      .then(() => console.log('Service Worker registered'))
+      .catch(err => console.error('SW registration failed:', err));
+  }
 </script>
 
 </body>
