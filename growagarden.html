@@ -22,13 +22,16 @@
   #refresh-btn {
     display: block;
     margin: 0 auto 20px auto;
-    padding: 8px 16px;
+    padding: 10px 20px;
     font-size: 16px;
-    cursor: pointer;
-    background-color: #6a9955;
+    background: #6a9955;
     color: white;
     border: none;
     border-radius: 5px;
+    cursor: pointer;
+  }
+  #refresh-btn:hover {
+    background: #57803e;
   }
   .stock-category {
     margin-bottom: 30px;
@@ -72,7 +75,7 @@
 
 <h1>🌱 Grow A Garden Live Feed</h1>
 <div id="status">Connecting to WebSocket...</div>
-<button id="refresh-btn">Refresh Page</button>
+<button id="refresh-btn" title="Refresh Page">🔄 Refresh</button>
 <div id="stock-container"></div>
 
 <script>
@@ -87,36 +90,13 @@
   let reconnecting = false;
 
   let latestData = {};
-  let notifyTimeout = null;
+  let isFirstUpdate = true; // Skip notification on first load
+  let notificationSentForCurrentData = false;
 
-  // Request permission for notifications once
-  function requestNotificationPermission() {
-    if (Notification.permission === "default") {
-      Notification.requestPermission();
-    }
-  }
+  refreshBtn.onclick = () => {
+    location.reload();
+  };
 
-  // Show a notification once per batch of updates (debounced)
-  function notifyUpdateOnce() {
-    if (notifyTimeout) return; // Already scheduled
-
-    notifyTimeout = setTimeout(() => {
-      if (Notification.permission === "granted") {
-        const notification = new Notification('Grow A Garden Update', {
-          body: 'Stock data updated.',
-          icon: 'https://api.joshlei.com/v2/growagarden/item/image/carrot',
-          tag: 'growagarden-stock-update',
-          renotify: true,
-        });
-        notification.onclick = () => {
-          window.location.reload();
-        };
-      }
-      notifyTimeout = null;
-    }, 500); // 500ms debounce
-  }
-
-  // Compare new data to old data to avoid unnecessary UI refresh
   function hasDataChanged(oldData, newData) {
     try {
       return JSON.stringify(oldData) !== JSON.stringify(newData);
@@ -125,12 +105,46 @@
     }
   }
 
-  // Render or update stock display
+  function notifyUpdateOnce() {
+    if (!("Notification" in window)) {
+      console.log("This browser does not support notifications.");
+      return;
+    }
+
+    if (Notification.permission === "granted") {
+      if (!notificationSentForCurrentData) {
+        showNotification();
+        notificationSentForCurrentData = true;
+      }
+    } else if (Notification.permission !== "denied") {
+      Notification.requestPermission().then(permission => {
+        if (permission === "granted") {
+          showNotification();
+          notificationSentForCurrentData = true;
+        }
+      });
+    }
+  }
+
+  function showNotification() {
+    const notification = new Notification("Grow A Garden Stock Updated!", {
+      body: "Click to refresh the page and see the latest stock.",
+      icon: "https://api.joshlei.com/v2/growagarden/item/image/carrot"
+    });
+    notification.onclick = () => {
+      window.focus();
+      location.reload();
+    };
+  }
+
   function displayStock(data) {
     if (!hasDataChanged(latestData, data)) {
-      return; // No changes, do nothing
+      // Data unchanged, no update needed
+      return;
     }
+
     latestData = data;
+    notificationSentForCurrentData = false; // Reset to allow next notification on new changes
 
     container.innerHTML = '';
 
@@ -175,7 +189,12 @@
       container.appendChild(section);
     }
 
-    notifyUpdateOnce();
+    // Only notify if NOT the first update
+    if (!isFirstUpdate) {
+      notifyUpdateOnce();
+    } else {
+      isFirstUpdate = false;
+    }
   }
 
   function connect() {
@@ -185,7 +204,6 @@
       statusEl.textContent = 'Connected to Grow A Garden Stock WebSocket';
       reconnecting = false;
       console.log('WebSocket connected');
-      requestNotificationPermission();
     };
 
     socket.onmessage = (event) => {
@@ -213,10 +231,6 @@
       }
     };
   }
-
-  refreshBtn.onclick = () => {
-    window.location.reload();
-  };
 
   connect();
 })();
