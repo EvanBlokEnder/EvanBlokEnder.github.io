@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Grow A Garden Live Stock Display</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f0f8ff;
+    padding: 20px;
+  }
+  h1 {
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+  #status {
+    text-align: center;
+    margin-bottom: 20px;
+    font-weight: bold;
+  }
+  .stock-category {
+    margin-bottom: 30px;
+  }
+  .stock-category h2 {
+    border-bottom: 2px solid #6a9955;
+    padding-bottom: 5px;
+    color: #2f4f2f;
+    text-transform: capitalize;
+  }
+  .items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+  .item-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 0 8px #ccc;
+    padding: 10px;
+    width: 150px;
+    text-align: center;
+  }
+  .item-card img {
+    max-width: 100px;
+    max-height: 100px;
+    object-fit: contain;
+    margin-bottom: 8px;
+  }
+  .item-name {
+    font-weight: bold;
+    margin-bottom: 4px;
+    color: #333;
+  }
+  .item-qty {
+    color: #666;
+  }
+</style>
+</head>
+<body>
+
+<h1>🌱 Grow A Garden Live Feed</h1>
+<div id="status">Connecting to WebSocket...</div>
+<div id="stock-container"></div>
+
+<script>
+(() => {
+  const WS_URL = 'wss://websocket.joshlei.com/growagarden/';
+  const statusEl = document.getElementById('status');
+  const container = document.getElementById('stock-container');
+
+  let socket = null;
+  let reconnectDelay = 3000;
+  let reconnecting = false;
+
+  // Store latest data by category
+  let latestData = {};
+
+  // Request notification permission on page load
+  function requestNotificationPermission() {
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission().then(permission => {
+        console.log('Notification permission:', permission);
+      });
+    }
+  }
+
+  // Show notification if permission granted
+  function showNotification(title, options) {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification(title, options);
+    }
+  }
+
+  // Check if two stock data objects differ meaningfully
+  function hasDataChanged(oldData, newData) {
+    return JSON.stringify(oldData) !== JSON.stringify(newData);
+  }
+
+  // Create or update UI with data
+  function displayStock(data) {
+    if (!hasDataChanged(latestData, data)) {
+      return; // No changes, skip update and notification
+    }
+
+    latestData = data; // update latest
+
+    container.innerHTML = '';
+
+    for (const category in data) {
+      if (!Array.isArray(data[category])) continue;
+
+      const section = document.createElement('div');
+      section.className = 'stock-category';
+
+      const title = document.createElement('h2');
+      title.textContent = category.replace(/_/g, ' ');
+      section.appendChild(title);
+
+      const itemsDiv = document.createElement('div');
+      itemsDiv.className = 'items';
+
+      data[category].forEach(item => {
+        if (item.icon && typeof item.icon === 'string') {
+          const card = document.createElement('div');
+          card.className = 'item-card';
+
+          const img = document.createElement('img');
+          img.src = item.icon;
+          img.alt = item.display_name || item.item_id || "Item";
+          card.appendChild(img);
+
+          const name = document.createElement('div');
+          name.className = 'item-name';
+          name.textContent = item.display_name || item.item_id;
+          card.appendChild(name);
+
+          const qty = document.createElement('div');
+          qty.className = 'item-qty';
+          qty.textContent = `Quantity: ${item.quantity || 0}`;
+          card.appendChild(qty);
+
+          itemsDiv.appendChild(card);
+        }
+      });
+
+      section.appendChild(itemsDiv);
+      container.appendChild(section);
+    }
+
+    // Show notification about update
+    showNotification('Grow A Garden Update', {
+      body: 'Stock data updated.',
+      icon: 'https://api.joshlei.com/v2/growagarden/item/image/carrot',
+      tag: 'growagarden-stock-update', // avoids stacking notifications
+      renotify: true,
+    });
+  }
+
+  // WebSocket connect + reconnect logic
+  function connect() {
+    socket = new WebSocket(WS_URL);
+
+    socket.onopen = () => {
+      statusEl.textContent = 'Connected to Grow A Garden Stock WebSocket';
+      reconnecting = false;
+      console.log('WebSocket connected');
+    };
+
+    socket.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (typeof data === 'object') {
+          displayStock(data);
+        }
+      } catch (e) {
+        console.warn('Invalid JSON from websocket:', e, event.data);
+      }
+    };
+
+    socket.onerror = (error) => {
+      console.error('WebSocket error:', error);
+      socket.close();
+    };
+
+    socket.onclose = (event) => {
+      statusEl.textContent = `Disconnected (code ${event.code}), reconnecting in ${reconnectDelay / 1000}s...`;
+      console.warn(`WebSocket closed: code ${event.code}, reason: ${event.reason || 'N/A'}`);
+      if (!reconnecting) {
+        reconnecting = true;
+        setTimeout(connect, reconnectDelay);
+      }
+    };
+  }
+
+  // Start
+  requestNotificationPermission();
+  connect();
+
+})();
+</script>
+
+</body>
+</html>
