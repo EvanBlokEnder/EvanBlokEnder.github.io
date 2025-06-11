@@ -16,7 +16,7 @@
   }
   #status {
     text-align: center;
-    margin-bottom: 10px;
+    margin-bottom: 20px;
     font-weight: bold;
   }
   #refresh-btn {
@@ -24,14 +24,11 @@
     margin: 0 auto 20px auto;
     padding: 8px 16px;
     font-size: 16px;
+    cursor: pointer;
     background-color: #6a9955;
     color: white;
     border: none;
     border-radius: 5px;
-    cursor: pointer;
-  }
-  #refresh-btn:hover {
-    background-color: #558b2f;
   }
   .stock-category {
     margin-bottom: 30px;
@@ -75,7 +72,7 @@
 
 <h1>🌱 Grow A Garden Live Feed</h1>
 <div id="status">Connecting to WebSocket...</div>
-<button id="refresh-btn" title="Refresh Page">🔄 Refresh</button>
+<button id="refresh-btn">Refresh Page</button>
 <div id="stock-container"></div>
 
 <script>
@@ -89,37 +86,59 @@
   let reconnectDelay = 3000;
   let reconnecting = false;
 
-  // Store latest data by category and item id for diffing and updating in place
   let latestData = {};
+  let notifyTimeout = null;
 
-  // Request notification permission on page load
+  // Request permission for notifications once
   function requestNotificationPermission() {
-    if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission().then(permission => {
-        console.log('Notification permission:', permission);
-      });
+    if (Notification.permission === "default") {
+      Notification.requestPermission();
     }
   }
 
-  // Show notification if permission granted
-  function showNotification(title, options) {
-    if ('Notification' in window && Notification.permission === 'granted') {
-      const notification = new Notification(title, options);
-      notification.onclick = () => {
-        window.focus();
-        location.reload();
-      };
+  // Show a notification once per batch of updates (debounced)
+  function notifyUpdateOnce() {
+    if (notifyTimeout) return; // Already scheduled
+
+    notifyTimeout = setTimeout(() => {
+      if (Notification.permission === "granted") {
+        const notification = new Notification('Grow A Garden Update', {
+          body: 'Stock data updated.',
+          icon: 'https://api.joshlei.com/v2/growagarden/item/image/carrot',
+          tag: 'growagarden-stock-update',
+          renotify: true,
+        });
+        notification.onclick = () => {
+          window.location.reload();
+        };
+      }
+      notifyTimeout = null;
+    }, 500); // 500ms debounce
+  }
+
+  // Compare new data to old data to avoid unnecessary UI refresh
+  function hasDataChanged(oldData, newData) {
+    try {
+      return JSON.stringify(oldData) !== JSON.stringify(newData);
+    } catch {
+      return true;
     }
   }
 
-  // Update or create stock category section
-  function updateCategory(category, items) {
-    // Try to find existing section or create it
-    let section = container.querySelector(`div.stock-category[data-category="${category}"]`);
-    if (!section) {
-      section = document.createElement('div');
+  // Render or update stock display
+  function displayStock(data) {
+    if (!hasDataChanged(latestData, data)) {
+      return; // No changes, do nothing
+    }
+    latestData = data;
+
+    container.innerHTML = '';
+
+    for (const category in data) {
+      if (!Array.isArray(data[category])) continue;
+
+      const section = document.createElement('div');
       section.className = 'stock-category';
-      section.dataset.category = category;
 
       const title = document.createElement('h2');
       title.textContent = category.replace(/_/g, ' ');
@@ -127,106 +146,38 @@
 
       const itemsDiv = document.createElement('div');
       itemsDiv.className = 'items';
-      section.appendChild(itemsDiv);
 
+      data[category].forEach(item => {
+        if (item.icon && typeof item.icon === 'string') {
+          const card = document.createElement('div');
+          card.className = 'item-card';
+
+          const img = document.createElement('img');
+          img.src = item.icon;
+          img.alt = item.display_name || item.item_id || "Item";
+          card.appendChild(img);
+
+          const name = document.createElement('div');
+          name.className = 'item-name';
+          name.textContent = item.display_name || item.item_id;
+          card.appendChild(name);
+
+          const qty = document.createElement('div');
+          qty.className = 'item-qty';
+          qty.textContent = `Quantity: ${item.quantity || 0}`;
+          card.appendChild(qty);
+
+          itemsDiv.appendChild(card);
+        }
+      });
+
+      section.appendChild(itemsDiv);
       container.appendChild(section);
     }
 
-    const itemsDiv = section.querySelector('.items');
-
-    // Create map of current item cards by item_id for easy update
-    const existingCards = {};
-    itemsDiv.querySelectorAll('.item-card').forEach(card => {
-      existingCards[card.dataset.itemId] = card;
-    });
-
-    // Add/update item cards
-    items.forEach(item => {
-      if (!item.icon || typeof item.icon !== 'string') return;
-
-      let card = existingCards[item.item_id];
-      if (!card) {
-        // Create new card
-        card = document.createElement('div');
-        card.className = 'item-card';
-        card.dataset.itemId = item.item_id;
-
-        const img = document.createElement('img');
-        img.alt = item.display_name || item.item_id || "Item";
-        card.appendChild(img);
-
-        const name = document.createElement('div');
-        name.className = 'item-name';
-        card.appendChild(name);
-
-        const qty = document.createElement('div');
-        qty.className = 'item-qty';
-        card.appendChild(qty);
-
-        itemsDiv.appendChild(card);
-      }
-
-      // Update card contents
-      const img = card.querySelector('img');
-      img.src = item.icon;
-
-      const name = card.querySelector('.item-name');
-      name.textContent = item.display_name || item.item_id;
-
-      const qty = card.querySelector('.item-qty');
-      qty.textContent = `Quantity: ${item.quantity || 0}`;
-
-      // Remove this card from existingCards map so we know which to remove later
-      delete existingCards[item.item_id];
-    });
-
-    // Remove cards that no longer exist in the new data
-    for (const removedId in existingCards) {
-      existingCards[removedId].remove();
-    }
+    notifyUpdateOnce();
   }
 
-  // Remove categories not in new data
-  function removeOldCategories(newCategories) {
-    [...container.querySelectorAll('.stock-category')].forEach(section => {
-      if (!newCategories.includes(section.dataset.category)) {
-        section.remove();
-      }
-    });
-  }
-
-  // Check if two data objects differ meaningfully
-  function hasDataChanged(oldData, newData) {
-    return JSON.stringify(oldData) !== JSON.stringify(newData);
-  }
-
-  // Display stock updates efficiently without wiping the entire container
-  function displayStock(data) {
-    if (!hasDataChanged(latestData, data)) {
-      return; // no changes
-    }
-    latestData = data;
-
-    const newCategories = Object.keys(data).filter(cat => Array.isArray(data[cat]));
-
-    // Remove old categories no longer present
-    removeOldCategories(newCategories);
-
-    // Update or add each category
-    newCategories.forEach(category => {
-      updateCategory(category, data[category]);
-    });
-
-    // Show notification about update
-    showNotification('Grow A Garden Update', {
-      body: 'Stock data updated.',
-      icon: 'https://api.joshlei.com/v2/growagarden/item/image/carrot',
-      tag: 'growagarden-stock-update', // avoids stacking notifications
-      renotify: true,
-    });
-  }
-
-  // WebSocket connect + reconnect logic
   function connect() {
     socket = new WebSocket(WS_URL);
 
@@ -234,6 +185,7 @@
       statusEl.textContent = 'Connected to Grow A Garden Stock WebSocket';
       reconnecting = false;
       console.log('WebSocket connected');
+      requestNotificationPermission();
     };
 
     socket.onmessage = (event) => {
@@ -262,10 +214,10 @@
     };
   }
 
-  refreshBtn.addEventListener('click', () => location.reload());
+  refreshBtn.onclick = () => {
+    window.location.reload();
+  };
 
-  // Start
-  requestNotificationPermission();
   connect();
 })();
 </script>
