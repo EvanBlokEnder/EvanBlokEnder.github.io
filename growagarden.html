@@ -21,19 +21,27 @@
       margin-bottom: 20px;
       font-weight: bold;
     }
-    #refresh-btn {
+    #refresh-btn, #subscribe-btn {
       display: block;
       margin: 0 auto 20px auto;
       padding: 10px 20px;
       font-size: 16px;
-      background: #6a9955;
       color: white;
       border: none;
       border-radius: 5px;
       cursor: pointer;
     }
+    #refresh-btn {
+      background: #6a9955;
+    }
     #refresh-btn:hover {
       background: #57803e;
+    }
+    #subscribe-btn {
+      background: #3b82f6;
+    }
+    #subscribe-btn:hover {
+      background: #2563eb;
     }
     .stock-category {
       margin-bottom: 30px;
@@ -78,6 +86,7 @@
 <h1>🌱 Grow A Garden Live Feed</h1>
 <div id="status">Connecting to WebSocket...</div>
 <button id="refresh-btn" title="Refresh Page">🔄 Refresh</button>
+<button id="subscribe-btn" title="Subscribe for Notifications">🔔 Subscribe</button>
 <div id="stock-container"></div>
 
 <script>
@@ -85,6 +94,7 @@
   const statusEl = document.getElementById('status');
   const container = document.getElementById('stock-container');
   const refreshBtn = document.getElementById('refresh-btn');
+  const subscribeBtn = document.getElementById('subscribe-btn');
 
   let socket = null;
   let reconnectDelay = 3000;
@@ -94,6 +104,50 @@
   let notificationSentForCurrentData = false;
 
   refreshBtn.onclick = () => location.reload();
+
+  // Update subscribe button text based on current permission
+  function updateSubscribeBtnText() {
+    if (!("Notification" in window)) {
+      subscribeBtn.textContent = "🔕 Notifications Not Supported";
+      subscribeBtn.disabled = true;
+      subscribeBtn.style.cursor = "not-allowed";
+    } else {
+      const perm = Notification.permission;
+      if (perm === "granted") {
+        subscribeBtn.textContent = "🔔 Subscribed";
+        subscribeBtn.disabled = true;
+        subscribeBtn.style.cursor = "default";
+      } else if (perm === "denied") {
+        subscribeBtn.textContent = "🔕 Permission Denied";
+        subscribeBtn.disabled = true;
+        subscribeBtn.style.cursor = "not-allowed";
+      } else {
+        subscribeBtn.textContent = "🔔 Subscribe";
+        subscribeBtn.disabled = false;
+        subscribeBtn.style.cursor = "pointer";
+      }
+    }
+  }
+
+  subscribeBtn.onclick = () => {
+    if (!("Notification" in window)) {
+      alert("Notifications are not supported by your browser.");
+      return;
+    }
+
+    if (Notification.permission === "default") {
+      Notification.requestPermission().then(permission => {
+        updateSubscribeBtnText();
+        if (permission === "granted") {
+          alert("Thank you for subscribing to notifications!");
+        } else if (permission === "denied") {
+          alert("You denied notification permission. You can enable it in your browser settings.");
+        }
+      });
+    } else {
+      alert(`Notification permission is already "${Notification.permission}".`);
+    }
+  };
 
   function hasDataChanged(oldData, newData) {
     try {
@@ -109,13 +163,6 @@
     if (Notification.permission === "granted" && !notificationSentForCurrentData) {
       showNotification();
       notificationSentForCurrentData = true;
-    } else if (Notification.permission !== "denied") {
-      Notification.requestPermission().then(permission => {
-        if (permission === "granted" && !notificationSentForCurrentData) {
-          showNotification();
-          notificationSentForCurrentData = true;
-        }
-      });
     }
   }
 
@@ -222,16 +269,8 @@
 
   connect();
 
-  // iOS-specific notification permission request on page load (only if supported)
-  function requestIOSNotificationPermission() {
-    if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission().then(permission => {
-        console.log('Notification permission on iOS:', permission);
-      });
-    }
-  }
-
-  requestIOSNotificationPermission();
+  // On page load, update subscribe button text according to current permission state
+  updateSubscribeBtnText();
 
   // PWA: Register Service Worker
   if ('serviceWorker' in navigator) {
