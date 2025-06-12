@@ -6,6 +6,7 @@
   <title>Grow A Garden Live Feed</title>
   <meta name="theme-color" content="#4caf50" />
   <style>
+    /* (CSS unchanged) */
     body {
       font-family: 'Segoe UI', Tahoma, Verdana, sans-serif;
       margin: 0;
@@ -13,7 +14,6 @@
       background-size: cover;
       color: #333;
     }
-
     .navbar {
       display: flex;
       background: rgba(62, 142, 65, 0.9);
@@ -23,7 +23,6 @@
       font-weight: bold;
       box-shadow: 0 4px 8px rgba(0,0,0,0.4);
     }
-
     .tab {
       background: #66bb6a;
       padding: 10px 24px;
@@ -32,18 +31,13 @@
       cursor: pointer;
       transition: background 0.3s;
     }
-
-    .tab:hover {
-      background: #4caf50;
-    }
-
+    .tab:hover { background: #4caf50; }
     h1 {
       text-align: center;
       margin: 20px;
       color: #2e7d32;
       font-size: 2.4em;
     }
-
     #status-checker {
       background: rgba(255,255,255,0.85);
       border: 3px solid #4caf50;
@@ -54,13 +48,11 @@
       text-align: center;
       box-shadow: 0 6px 12px rgba(0,0,0,0.3);
     }
-
     #status, #status-text {
       font-size: 1.1em;
       font-weight: bold;
       margin-bottom: 8px;
     }
-
     #refresh-btn, #subscribe-btn {
       display: block;
       margin: 10px auto;
@@ -72,12 +64,10 @@
       font-weight: bold;
       box-shadow: 0 3px 6px rgba(0,0,0,0.2);
     }
-
     #refresh-btn { background: #ffa000; color: white; }
     #refresh-btn:hover { background: #ff8f00; }
     #subscribe-btn { background: #00c853; color: white; }
     #subscribe-btn:hover { background: #00b341; }
-
     .stock-category {
       margin: 20px;
       padding: 12px;
@@ -86,7 +76,6 @@
       border-radius: 10px;
       box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
-
     .stock-category h2 {
       margin: 0 0 10px 0;
       color: #2e7d32;
@@ -96,14 +85,12 @@
       text-align: center;
       font-size: 1.3em;
     }
-
     .items {
       display: flex;
       flex-wrap: wrap;
       gap: 15px;
       justify-content: center;
     }
-
     .item-card {
       background: #fff;
       border: 2px solid #f0ad4e;
@@ -113,25 +100,21 @@
       text-align: center;
       box-shadow: 0 3px 6px rgba(0,0,0,0.15);
     }
-
     .item-card img {
       width: 90px;
       height: 90px;
       object-fit: contain;
     }
-
     .item-name {
       font-weight: bold;
       margin-top: 6px;
       color: #333;
       font-size: 0.95em;
     }
-
     .item-qty {
       color: #555;
       font-size: 0.9em;
     }
-
     .rarity {
       font-size: 11px;
       font-weight: bold;
@@ -140,7 +123,6 @@
       margin-bottom: 4px;
       color: white;
     }
-
     .common { background: #9e9e9e; }
     .uncommon { background: #66bb6a; }
     .rare { background: #42a5f5; }
@@ -158,38 +140,45 @@
 <h1>Grow A Garden Live Feed 🌻</h1>
 
 <div id="status-checker">
-  <div id="status-text">Checking server...</div>
+  <div id="status-text">Connecting to WebSocket...</div>
   <div id="uptime">Uptime: 0s</div>
 </div>
 
-<div id="status">Connecting to API...</div>
+<div id="status">Initializing...</div>
 <button id="refresh-btn">🔄 Refresh</button>
 <button id="subscribe-btn">🔔 Subscribe</button>
 <div id="stock-container"></div>
 
 <script>
-const stockURL = 'https://corsproxy.io/?https://api.joshlei.com/v2/growagarden/stock';
-const statusEl = document.getElementById('status');
 const container = document.getElementById('stock-container');
 const refreshBtn = document.getElementById('refresh-btn');
 const subscribeBtn = document.getElementById('subscribe-btn');
 const statusTextEl = document.getElementById('status-text');
+const statusEl = document.getElementById('status');
 const uptimeEl = document.getElementById('uptime');
 
 let latestData = {}, first = true, notified = false, seconds = 0;
 
-function updateStatus(msg, col='#2e7d32'){ statusEl.textContent = msg; statusTextEl.textContent = msg; statusTextEl.style.color = col; }
+function updateStatus(msg, col='#2e7d32'){ 
+  statusEl.textContent = msg;
+  statusTextEl.textContent = msg;
+  statusTextEl.style.color = col;
+}
 setInterval(()=>{ seconds++; uptimeEl.textContent = `Uptime: ${seconds}s`; },1000);
 
 function notify() {
   if (!("Notification" in window) || notified) return;
   if (Notification.permission === "granted") {
-    new Notification("Garden Stock Updated!", { body: "Reload to see latest stock!", icon: container.querySelector('img')?.src });
+    new Notification("Garden Stock Updated!", {
+      body: "Live update received.",
+      icon: container.querySelector('img')?.src
+    });
     notified = true;
   }
 }
 
 function hasChanged(o,n){ return JSON.stringify(o)!==JSON.stringify(n); }
+
 function rarity(q){
   if(q>=50)return 'common';
   if(q>=20)return 'uncommon';
@@ -223,15 +212,40 @@ function display(data){
   if(!first) notify(); else first=false;
 }
 
-async function fetchStock(){
-  try{ updateStatus("Fetching stock...","#2e7d32");
-    const j=await (await fetch(stockURL)).json();
-    display(j); updateStatus("Stock updated ✅","#00c853");
-  }catch(e){ console.error(e); updateStatus("Failed to fetch ❌","#c62828"); }
+function connectWebSocket() {
+  updateStatus("Connecting to WebSocket...","#0277bd");
+  const ws = new WebSocket('wss://websocket.joshlei.com/growagarden/');
+
+  ws.onopen = () => updateStatus("Connected ✅","#00c853");
+
+  ws.onmessage = (event) => {
+    try {
+      const data = JSON.parse(event.data);
+      display(data);
+      updateStatus("Live data received ✅","#43a047");
+    } catch (e) {
+      console.error("Parsing error:", e);
+      updateStatus("Data error ❌","#e53935");
+    }
+  };
+
+  ws.onerror = (e) => {
+    console.error("WebSocket error", e);
+    updateStatus("WebSocket error ❌","#d32f2f");
+  };
+
+  ws.onclose = () => {
+    updateStatus("Disconnected. Reconnecting... 🔄","#f57c00");
+    setTimeout(connectWebSocket, 3000);
+  };
 }
-fetchStock(); setInterval(fetchStock,15000);
+
 refreshBtn.onclick = ()=>location.reload();
-subscribeBtn.onclick = ()=>Notification.requestPermission().then(()=>{ subscribeBtn.textContent = Notification.permission==="granted" ? "🔔 Subscribed" : Notification.permission==="denied"?"🔕 Denied":"🔔 Subscribe"; });
+subscribeBtn.onclick = ()=>Notification.requestPermission().then(()=>{
+  subscribeBtn.textContent = Notification.permission==="granted" ? "🔔 Subscribed" : Notification.permission==="denied"?"🔕 Denied":"🔔 Subscribe";
+});
+
+connectWebSocket();
 </script>
 
 </body>
