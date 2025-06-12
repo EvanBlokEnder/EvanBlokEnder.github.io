@@ -20,6 +20,7 @@
       text-align: center;
       margin-bottom: 20px;
       font-weight: bold;
+      color: #1e40af;
     }
     #refresh-btn, #subscribe-btn {
       display: block;
@@ -79,11 +80,47 @@
     .item-qty {
       color: #666;
     }
+
+    /* Styles for Status Checker */
+    #status-checker {
+      background: #d9e8ff;
+      border: 2px solid #3b82f6;
+      border-radius: 8px;
+      padding: 15px;
+      max-width: 400px;
+      margin: 10px auto 30px auto;
+      text-align: center;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      box-shadow: 0 0 10px #3b82f6aa;
+    }
+    #status-checker h2 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      color: #1e40af;
+    }
+    #status-text {
+      font-weight: bold;
+      font-size: 1.2em;
+      margin-bottom: 8px;
+      color: #1e3a8a;
+    }
+    #uptime {
+      font-size: 0.9em;
+      color: #2563eb;
+    }
   </style>
 </head>
 <body>
 
 <h1>🌱 Grow A Garden Live Feed</h1>
+
+<!-- Status Checker embed -->
+<div id="status-checker">
+  <h2>Status Checker</h2>
+  <div id="status-text">Connecting...</div>
+  <div id="uptime">Uptime: 0s</div>
+</div>
+
 <div id="status">Connecting to WebSocket...</div>
 <button id="refresh-btn" title="Refresh Page">🔄 Refresh</button>
 <button id="subscribe-btn" title="Subscribe for Notifications">🔔 Subscribe</button>
@@ -96,6 +133,10 @@
   const refreshBtn = document.getElementById('refresh-btn');
   const subscribeBtn = document.getElementById('subscribe-btn');
 
+  // Status Checker elements
+  const statusTextEl = document.getElementById('status-text');
+  const uptimeEl = document.getElementById('uptime');
+
   let socket = null;
   let reconnectDelay = 3000;
   let reconnecting = false;
@@ -103,52 +144,11 @@
   let isFirstUpdate = true;
   let notificationSentForCurrentData = false;
 
+  let openTimeout = null;  // Timeout timer to track 13 seconds until open
+
   refreshBtn.onclick = () => location.reload();
 
-  // Update subscribe button text based on current permission
-  function updateSubscribeBtnText() {
-    if (!("Notification" in window)) {
-      subscribeBtn.textContent = "🔕 Notifications Not Supported";
-      subscribeBtn.disabled = true;
-      subscribeBtn.style.cursor = "not-allowed";
-    } else {
-      const perm = Notification.permission;
-      if (perm === "granted") {
-        subscribeBtn.textContent = "🔔 Subscribed";
-        subscribeBtn.disabled = true;
-        subscribeBtn.style.cursor = "default";
-      } else if (perm === "denied") {
-        subscribeBtn.textContent = "🔕 Permission Denied";
-        subscribeBtn.disabled = true;
-        subscribeBtn.style.cursor = "not-allowed";
-      } else {
-        subscribeBtn.textContent = "🔔 Subscribe";
-        subscribeBtn.disabled = false;
-        subscribeBtn.style.cursor = "pointer";
-      }
-    }
-  }
-
-  subscribeBtn.onclick = () => {
-    if (!("Notification" in window)) {
-      alert("Notifications are not supported by your browser.");
-      return;
-    }
-
-    if (Notification.permission === "default") {
-      Notification.requestPermission().then(permission => {
-        updateSubscribeBtnText();
-        if (permission === "granted") {
-          alert("Thank you for subscribing to notifications!");
-        } else if (permission === "denied") {
-          alert("You denied notification permission. You can enable it in your browser settings.");
-        }
-      });
-    } else {
-      alert(`Notification permission is already "${Notification.permission}".`);
-    }
-  };
-
+  // --- Main WebSocket for stock updates ---
   function hasDataChanged(oldData, newData) {
     try {
       return JSON.stringify(oldData) !== JSON.stringify(newData);
@@ -236,7 +236,19 @@
   function connect() {
     socket = new WebSocket(WS_URL);
 
+    // Set timeout for open event - 13 seconds
+    openTimeout = setTimeout(() => {
+      if (socket.readyState !== WebSocket.OPEN) {
+        statusEl.textContent = "Connection timed out, reloading in 3 seconds...";
+        socket.close(); // Close if still not open
+        setTimeout(() => {
+          location.reload();
+        }, 3000);
+      }
+    }, 13000);
+
     socket.onopen = () => {
+      clearTimeout(openTimeout); // Clear timeout on successful open
       statusEl.textContent = 'Connected to Grow A Garden Stock WebSocket';
       reconnecting = false;
       console.log('WebSocket connected');
@@ -254,11 +266,17 @@
     };
 
     socket.onerror = (error) => {
+      clearTimeout(openTimeout);
       console.error('WebSocket error:', error);
       socket.close();
     };
 
     socket.onclose = (event) => {
+      clearTimeout(openTimeout);
+      if (statusEl.textContent.startsWith("Connection timed out")) {
+        // Already handled timeout reload
+        return;
+      }
       statusEl.textContent = `Disconnected (code ${event.code}), reconnecting in ${reconnectDelay / 1000}s...`;
       if (!reconnecting) {
         reconnecting = true;
@@ -270,6 +288,49 @@
   connect();
 
   // On page load, update subscribe button text according to current permission state
+  function updateSubscribeBtnText() {
+    if (!("Notification" in window)) {
+      subscribeBtn.textContent = "🔕 Notifications Not Supported";
+      subscribeBtn.disabled = true;
+      subscribeBtn.style.cursor = "not-allowed";
+    } else {
+      const perm = Notification.permission;
+      if (perm === "granted") {
+        subscribeBtn.textContent = "🔔 Subscribed";
+        subscribeBtn.disabled = true;
+        subscribeBtn.style.cursor = "default";
+      } else if (perm === "denied") {
+        subscribeBtn.textContent = "🔕 Permission Denied";
+        subscribeBtn.disabled = true;
+        subscribeBtn.style.cursor = "not-allowed";
+      } else {
+        subscribeBtn.textContent = "🔔 Subscribe";
+        subscribeBtn.disabled = false;
+        subscribeBtn.style.cursor = "pointer";
+      }
+    }
+  }
+
+  subscribeBtn.onclick = () => {
+    if (!("Notification" in window)) {
+      alert("Notifications are not supported by your browser.");
+      return;
+    }
+
+    if (Notification.permission === "default") {
+      Notification.requestPermission().then(permission => {
+        updateSubscribeBtnText();
+        if (permission === "granted") {
+          alert("Thank you for subscribing to notifications!");
+        } else if (permission === "denied") {
+          alert("You denied notification permission. You can enable it in your browser settings.");
+        }
+      });
+    } else {
+      alert(`Notification permission is already "${Notification.permission}".`);
+    }
+  };
+
   updateSubscribeBtnText();
 
   // PWA: Register Service Worker
@@ -278,6 +339,72 @@
       .then(() => console.log('Service Worker registered'))
       .catch(err => console.error('SW registration failed:', err));
   }
+
+  // --- Status Checker WebSocket ---
+  let statusSocket = null;
+  let statusReconnectDelay = 3000;
+  let statusConnected = false;
+  let uptimeSeconds = 0;
+  let uptimeInterval = null;
+
+  function updateStatusText(text, color = '#1e3a8a') {
+    statusTextEl.textContent = text;
+    statusTextEl.style.color = color;
+  }
+
+  function updateUptimeText() {
+    uptimeEl.textContent = `Uptime: ${uptimeSeconds}s`;
+  }
+
+  function resetUptime() {
+    uptimeSeconds = 0;
+    updateUptimeText();
+    if (uptimeInterval) {
+      clearInterval(uptimeInterval);
+      uptimeInterval = null;
+    }
+  }
+
+  function startUptimeCounter() {
+    if (uptimeInterval) clearInterval(uptimeInterval);
+    uptimeInterval = setInterval(() => {
+      uptimeSeconds++;
+      updateUptimeText();
+    }, 1000);
+  }
+
+  function connectStatusSocket() {
+    updateStatusText('Connecting...', '#1e3a8a');
+    resetUptime();
+
+    statusSocket = new WebSocket(WS_URL);
+
+    statusSocket.onopen = () => {
+      statusConnected = true;
+      updateStatusText('Connected', '#16a34a'); // green
+      startUptimeCounter();
+    };
+
+    statusSocket.onmessage = (event) => {
+      // No processing needed here for status checker
+    };
+
+    statusSocket.onerror = (error) => {
+      console.error('Status WebSocket error:', error);
+      updateStatusText('Error', '#dc2626'); // red
+      statusSocket.close();
+    };
+
+    statusSocket.onclose = (event) => {
+      statusConnected = false;
+      updateStatusText(`Disconnected (code ${event.code}), reconnecting...`, '#b45309'); // amber
+      resetUptime();
+      setTimeout(connectStatusSocket, statusReconnectDelay);
+    };
+  }
+
+  connectStatusSocket();
+
 </script>
 
 </body>
