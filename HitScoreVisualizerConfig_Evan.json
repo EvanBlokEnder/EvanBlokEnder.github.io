@@ -43,7 +43,7 @@
     },
     {
       "threshold": 105,
-      "text": "<size=150%>%B05%A</size>",
+      "text": "<size=150%>%B105%A</size>",
       "color": [
         0.0,
         1.0,
@@ -54,7 +54,7 @@
     },
     {
       "threshold": 101,
-      "text": "<size=150%>%B01%A</size>",
+      "text": "<size=150%>%B101%A</size>",
       "color": [
         1.0,
         0.980392158,
@@ -76,7 +76,7 @@
     },
     {
       "threshold": 0,
-      "text": "<size=150%>go play gtag</size>",
+      "text": "<size=150%>GO PLAY GORILLA TAG 🐒</size>",
       "color": [
         1.0,
         0.0,
