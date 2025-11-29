@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EvanBlokEnder</title>
     <style>
-        /* General Reset */
         * {
             margin: 0;
             padding: 0;
@@ -15,137 +14,138 @@
         body {
             font-family: 'Arial', sans-serif;
             line-height: 1.6;
-            background: linear-gradient(45deg, #87CEEB, #00008B);
-            background-size: 400% 400%;
-            animation: gradientAnimation 10s ease infinite;
-            color: #fff;
+            background: radial-gradient(circle at top, #0a0a0f, #000);
+            color: #e3e3e3;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            overflow-x: hidden;
         }
 
-        @keyframes gradientAnimation {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+        /* Liquid Glass Effect */
+        .glass {
+            position: relative;
+            background: rgba(255,255,255,.08);
+            border: 2px solid transparent;
+            box-shadow: 0 0 0 2px rgba(255,255,255,.6), 0 16px 32px rgba(0,0,0,.12);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-radius: 20px;
         }
+
+        .glass::before,
+        .glass::after{
+            content:"";
+            position:absolute;
+            width:40%;
+            height:10px;
+            background:#fff;
+            border-radius:10px;
+            opacity:0.15;
+        }
+        .glass::after{transform:rotate(90deg)}
 
         /* Header */
         header {
-            background: rgba(0, 0, 139, 0.5);
-            padding: 10px 20px;
+            padding: 15px 25px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 2px solid rgba(255, 255, 255, 0.3);
             position: sticky;
             top: 0;
             z-index: 1000;
-            backdrop-filter: blur(5px);
+            animation: fadeIn 1.5s ease;
         }
 
         header h1 {
-            font-size: 24px;
-            animation: fadeIn 1s ease-in-out;
+            font-size: 28px;
+            font-weight: bold;
+            background: linear-gradient(90deg, #5ab2ff, #9df7ff);
+            -webkit-background-clip: text;
+            color: transparent;
+            animation: glow 5s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 5px #5ab2ff; }
+            to { text-shadow: 0 0 20px #9df7ff; }
         }
 
         nav ul {
             list-style: none;
             display: flex;
-        }
-
-        nav ul li {
-            margin: 0 10px;
+            gap: 15px;
         }
 
         nav ul li a {
             text-decoration: none;
-            color: #fff;
+            color: #d8ecff;
             font-weight: bold;
             transition: color 0.3s ease, transform 0.3s ease;
         }
 
         nav ul li a:hover {
-            color: #add8e6;
+            color: #7ed2ff;
             transform: translateY(-3px);
         }
 
+        /* Buttons */
         .button {
             display: inline-block;
-            padding: 10px 20px;
+            padding: 10px 22px;
             margin-top: 20px;
-            background: #00008B;
+            background: linear-gradient(135deg, #004e92, #000428);
             color: #fff;
-            border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             text-decoration: none;
-            transition: background 0.3s ease, transform 0.3s ease;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
         .button:hover {
-            background: #0000CD;
-            transform: translateY(-3px);
+            transform: translateY(-4px) scale(1.03);
+            box-shadow: 0 0 15px rgba(100, 180, 255, 0.6);
         }
 
-        /* Main Content */
+        /* Container */
         .container {
             max-width: 1200px;
-            margin: 20px auto;
+            margin: 40px auto;
             padding: 20px;
             text-align: center;
         }
 
         .card {
-            background: rgba(0, 0, 139, 0.3);
-            padding: 20px;
-            margin: 20px 0;
-            border-radius: 8px;
-            text-align: center;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(8px);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            padding: 25px;
+            margin: 25px 0;
+            border-radius: 15px;
+            animation: floatUp 0.8s ease;
+        }
+
+        @keyframes floatUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
 
         .card:hover {
             transform: translateY(-10px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-        }
-
-        .card img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 8px;
-            transition: transform 0.3s ease;
-        }
-
-        .card img:hover {
-            transform: scale(1.05);
+            transition: 0.3s ease;
         }
 
         /* Footer */
         footer {
             text-align: center;
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.6);
-            color: #fff;
-            margin-top: 20px;
-            backdrop-filter: blur(5px);
-            animation: fadeIn 1s ease-in-out;
+            padding: 25px;
+            opacity: 0.8;
+            animation: fadeIn 1.5s ease;
         }
 
-        /* Animations */
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
         }
 
-        @keyframes slideIn {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        /* Mobile Hamburger Menu */
+        /* Hamburger */
         .hamburger {
             display: none;
             flex-direction: column;
@@ -153,15 +153,15 @@
         }
 
         .hamburger div {
-            width: 25px;
+            width: 28px;
             height: 3px;
             background: #fff;
-            margin: 4px 0;
-            transition: all 0.3s ease;
+            margin: 5px 0;
+            transition: 0.3s ease;
         }
 
         .hamburger.active div:nth-child(1) {
-            transform: rotate(-45deg) translate(-5px, 6px);
+            transform: rotate(-45deg) translate(-6px, 6px);
         }
 
         .hamburger.active div:nth-child(2) {
@@ -169,20 +169,19 @@
         }
 
         .hamburger.active div:nth-child(3) {
-            transform: rotate(45deg) translate(-5px, -6px);
+            transform: rotate(45deg) translate(-6px, -6px);
         }
 
         @media (max-width: 768px) {
             nav ul {
                 display: none;
-                flex-direction: column;
-                background: rgba(0, 0, 139, 0.8);
                 position: absolute;
-                top: 60px;
                 right: 20px;
-                border-radius: 8px;
-                padding: 10px;
-                animation: slideIn 0.5s ease;
+                top: 70px;
+                flex-direction: column;
+                padding: 15px;
+                gap: 10px;
+                width: 180px;
             }
 
             nav ul.active {
@@ -196,7 +195,7 @@
     </style>
 </head>
 <body>
-    <header>
+    <header class="glass">
         <h1>EvanBlokEnder</h1>
         <nav>
             <div class="hamburger">
@@ -204,7 +203,7 @@
                 <div></div>
                 <div></div>
             </div>
-            <ul>
+            <ul class="glass">
                 <li><a href="https://evanblokender.github.io">Home</a></li>
                 <li><a href="about.html">About Me</a></li>
                 <li><a href="https://evanblokender.github.io/projects">Projects</a></li>
@@ -219,24 +218,23 @@
     </header>
 
     <div class="container">
-        <div class="card">
+        <div class="card glass">
             <h2>WELCOME TO MY PAGE...</h2>
-            <p>I'm just a VR YouTuber that plays Beay Saber i think.</p>
+            <p>I'm just a VR YouTuber that plays Beat Saber... I think.</p>
             <a href="stats.html" class="button">View my Beat Saber stats...</a>
         </div>
 
-
-        <div class="card">
+        <div class="card glass">
             <h3>EEEEEE</h3>
             <p>EEEEEEE</p>
         </div>
 
-        <div class="card">
+        <div class="card glass">
             <h3>Evan</h3>
             <p>Just an okay Beat Saber player.</p>
         </div>
 
-        <div class="card">
+        <div class="card glass">
             <h3>MM</h3>
             <p>mm vs EEEEEEEE</p>
         </div>
@@ -244,12 +242,11 @@
         <a href="whatis.html" class="button">What is Beat Saber?</a>
     </div>
 
-    <footer>
-        <p>&copy; 2025 EvanBlokEnder. All Rights Reserved. Not that it matters...</p>
+    <footer class="glass">
+        <p>&copy; 2025 EvanBlokEnder. All Rights Reserved.</p>
     </footer>
 
     <script>
-        // Hamburger Menu Toggle
         const hamburger = document.querySelector('.hamburger');
         const navUl = document.querySelector('nav ul');
 
