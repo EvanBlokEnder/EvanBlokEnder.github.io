@@ -14,41 +14,58 @@
         body {
             font-family: Arial, sans-serif;
             line-height: 1.6;
-            background: linear-gradient(45deg, #6a11cb, #2575fc);
-            background-size: 400% 400%;
-            animation: gradientAnimation 10s ease infinite;
+            background: radial-gradient(circle at top, #0a0a0f, #000);
             color: #fff;
             height: 100vh;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
+            overflow: hidden;
         }
-        @keyframes gradientAnimation {
-            0% {
-                background-position: 0% 50%;
-            }
-            50% {
-                background-position: 100% 50%;
-            }
-            100% {
-                background-position: 0% 50%;
-            }
-        }
-        .message {
-            font-size: 24px;
+
+        /* Liquid Glass Effect */
+        .glass {
+            position: relative;
+            background: rgba(255,255,255,.08);
+            border: 2px solid transparent;
+            box-shadow: 0 0 0 2px rgba(255,255,255,.6), 0 16px 32px rgba(0,0,0,.12);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-radius: 20px;
+            padding: 25px 35px;
             text-align: center;
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 10px;
-            backdrop-filter: blur(10px);
+            animation: fadeIn 1.5s ease;
         }
+
+        .glass::before,
+        .glass::after{
+            content:"";
+            position:absolute;
+            width:40%;
+            height:10px;
+            background:#fff;
+            border-radius:10px;
+            opacity:0.15;
+        }
+        .glass::after{transform:rotate(90deg)}
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        a {
+            color: #ff6d6d;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
-    <div class="message">
-        <p>Redirecting to videos...</p>
-        <p>If you are not redirected, <a href="https://www.youtube.com/@evanblokender-99/videos" style="color: #ff4b4b;">click here</a>.</p>
+    <div class="glass">
+        <p style="font-size: 24px; margin-bottom: 10px;">Redirecting to videos...</p>
+        <p>If you are not redirected, <a href="https://www.youtube.com/@evanblokender-99/videos">click here</a>.</p>
     </div>
 </body>
 </html>
