@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>VortexWizrd Fan Club - Official Beat Saber Fansite</title>
+<style>
+    body {
+        margin: 0;
+        height: 100vh;
+        background: linear-gradient(135deg, #00d0ff, #ff00aa, #0066ff);
+        color: white;
+        font-family: 'Arial Black', Arial, sans-serif;
+        overflow: hidden;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    h1 {
+        font-size: 4.5rem;
+        text-shadow: 0 0 20px #00ffff, 0 0 40px #ff00ff;
+        animation: glow 2s infinite alternate;
+    }
+    @keyframes glow {
+        from { text-shadow: 0 0 20px #00ffff; }
+        to { text-shadow: 0 0 50px #ff00ff, 0 0 80px #00ffff; }
+    }
+    p {
+        font-size: 2rem;
+        margin: 20px;
+    }
+    button {
+        padding: 25px 80px;
+        font-size: 3rem;
+        background: #ff0088;
+        border: none;
+        border-radius: 30px;
+        color: white;
+        cursor: pointer;
+        box-shadow: 0 0 40px #00ffff;
+        transition: 0.3s;
+    }
+    button:hover {
+        transform: scale(1.15);
+        background: #00ffff;
+        color: #ff0088;
+        box-shadow: 0 0 70px #ff00ff;
+    }
+    .bloq {
+        position: absolute;
+        pointer-events: none;
+        user-select: none;
+        width: 90px;
+        height: 90px;
+        image-rendering: pixelated;
+        animation: spin 3s linear infinite;
+    }
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+</style>
+</head>
+<body>
+    <h1>VORTEXWIZRD FAN CLUB</h1>
+    <p>The coolest Beat Saber player on the planet!</p>
+    <p>Join thousands of fans who love his insane skills</p>
+    
+    <button id="join">JOIN THE FAN CLUB!!</button>
+
+    <script>
+        const button = document.getElementById('join');
+        let running = false;
+
+        button.addEventListener('click', () => {
+            if (running) return;
+            running = true;
+
+            // Clean page
+            document.body.innerHTML = '';
+            document.body.style.background = '#000';
+
+            let count = 1;
+
+            const spawnWave = () => {
+                for (let i = 0; i < count; i++) {
+                    const img = document.createElement('img');
+                    img.src = 'bloq.png'; // put your bloq.png in the same folder
+                    img.className = 'bloq';
+                    img.style.left = Math.random() * 100 + 'vw';
+                    img.style.top = Math.random() * 100 + 'vh';
+                    img.style.transform = `rotate(${Math.random()*360}deg) scale(${0.3 + Math.random() * 1.2})`;
+                    img.style.opacity = 0.9;
+                    document.body.appendChild(img);
+                }
+
+                count *= 2; // doubles every wave
+
+                if (count < 32768) { // still goes absolutely nuclear but won't kill the tab instantly
+                    setTimeout(spawnWave, 16);
+                }
+            };
+
+            // Start the madness
+            spawnWave();
+        });
+    </script>
+</body>
+</html>
